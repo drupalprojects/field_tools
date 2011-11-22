@@ -45,7 +45,7 @@ function field_tools_taxonomy_apply_form($form, &$form_state, $vocabulary) {
   );
 
   module_load_include('inc', 'field_ui', 'field_ui.admin');
-  $widget_options = field_ui_widget_type_options($field['type']);
+  $widget_options = field_ui_widget_type_options('taxonomy_term_reference');
   $form['settings']['widget_type'] = array(
     '#type' => 'select',
     '#title' => t('Widget type'),
