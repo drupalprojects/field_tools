@@ -54,6 +54,8 @@ function field_tools_bundle_fields_clone_form($form, &$form_state, $entity_type,
 function field_tools_bundle_fields_clone_form_submit($form, &$form_state) {
   // Get details from the original form builder parameters.
   list($source_entity_type, $source_bundle_name) = $form_state['build_info']['args'];
+  // Get the bundle name if the bundle name is really a bundle object.
+  $source_bundle_name = field_extract_bundle($source_entity_type, $source_bundle_name);
 
   // Get names of fields to clone.
   $field_names = array_filter($form_state['values']['fields']);
