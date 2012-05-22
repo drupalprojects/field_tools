@@ -55,10 +55,13 @@ function field_tools_menu() {
             'access arguments' => array('administer site configuration'),
           );          
           
+          // Menu item for cloning a single field.
           $items["$path/fields/%field_ui_menu/clone"] = array(
             'load arguments' => array($entity_type, $bundle_arg, $bundle_pos, '%map'),
             'title' => 'Clone',
             'page callback' => 'drupal_get_form',
+            // The numeric $field_position gets us the field instance from the
+            // %field_ui_menu menu loader.
             'page arguments' => array('field_tools_field_clone_form', $field_position),
             'type' => MENU_LOCAL_TASK,
             'file' => 'field_tools.admin.inc',

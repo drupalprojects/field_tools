@@ -6,6 +6,9 @@
 
 /**
  * Form builder for the field clone page.
+ *
+ * @param $instance
+ *  A FieldAPI field instance definition array.
  */
 function field_tools_field_clone_form($form, &$form_state, $instance) {
   //dsm($instance);
