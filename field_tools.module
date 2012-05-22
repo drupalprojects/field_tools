@@ -8,6 +8,9 @@
  * Implements hook_help().
  */
 function field_tools_help($path, $arg) {
+  // WTF: the $arg array is 12 items long with empty cruft at the end!?!
+  $args_reverse = array_reverse(array_filter($arg));
+
   // Provide help for any path that ends in 'fields/%/clone'
   $last_three = array_slice(array_filter($arg), -3);
   // If we get fewer than three items we don't care anyway.
@@ -15,6 +18,11 @@ function field_tools_help($path, $arg) {
     if ($last_three[0] == 'fields' && $last_three[2] == 'clone') {
       return t('Apply this existing field to the other bundles by copying the current field instance.');
     }
+  }
+
+  // Provide help for any path that ends in 'fields-clone'
+  if ($args_reverse[0] == 'fields-clone') {
+    return t("Apply some or all fields of the current bundle to other bundles by copying the field instances.");
   }
 }
 
@@ -54,7 +62,19 @@ function field_tools_menu() {
             'access callback' => 'user_access',
             'access arguments' => array('administer site configuration'),
           );          
-          
+
+          // Menu item for cloning a bundle's fields en masse.
+          // In some cases, $path is the same for every bundle, eg nodes, and
+          // hence doing this here is redundant.
+          $items["$path/fields-clone"] = array(
+              'title' => 'Clone fields',
+              'page callback' => 'drupal_get_form',
+              'page arguments' => array('field_tools_bundle_fields_clone_form', $entity_type, (int) $bundle_pos),
+              'type' => MENU_LOCAL_TASK,
+              'file' => 'field_tools.admin.inc',
+              'weight' => 10,
+            ) + $access;
+
           // Menu item for cloning a single field.
           $items["$path/fields/%field_ui_menu/clone"] = array(
             'load arguments' => array($entity_type, $bundle_arg, $bundle_pos, '%map'),

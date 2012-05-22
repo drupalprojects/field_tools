@@ -5,6 +5,82 @@
  */
 
 /**
+ * Form builder for the mass clone page.
+ *
+ * @param $entity_type
+ *  The machine name of the entity.
+ * @param $bundle_name
+ *  The machine name of the bundle, or a bundle object if the particular
+ *  entity type has a menu loader for bundles.
+ */
+function field_tools_bundle_fields_clone_form($form, &$form_state, $entity_type, $bundle_name) {
+  // Get the bundle name if the bundle name is really a bundle object.
+  $bundle_name = field_extract_bundle($entity_type, $bundle_name);
+
+  $field_instances = field_info_instances($entity_type, $bundle_name);
+  //dsm($field_instances);
+
+  $options_fields = array();
+  foreach ($field_instances as $field_name => $field) {
+    $options_fields[$field_name] = $field['label'];
+  }
+
+  $form['fields'] = array(
+    '#title' => t('Fields to clone'),
+    '#type' => 'checkboxes',
+    '#options' => $options_fields,
+    '#description' => t("Select fields to clone onto one or more bundles."),
+  );
+
+  $form['bundles'] = array(
+    '#title' => t('Bundle(s) to clone onto'),
+    '#type' => 'checkboxes',
+    '#options' => field_tools_options_entity_bundle(),
+    //'#default_value' => $default_bundles,
+    '#description' => t("Select bundles on which to apply the selected fields."),
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add field instances'),
+  );
+
+  return $form;
+}
+
+/**
+ * Submit handler for the mass clone form.
+ */
+function field_tools_bundle_fields_clone_form_submit($form, &$form_state) {
+  // Get details from the original form builder parameters.
+  list($source_entity_type, $source_bundle_name) = $form_state['build_info']['args'];
+
+  // Get names of fields to clone.
+  $field_names = array_filter($form_state['values']['fields']);
+
+  foreach ($field_names as $field_name) {
+    $field = field_info_field($field_name);
+    $instance = field_info_instance($source_entity_type, $field_name, $source_bundle_name);
+
+    foreach (array_filter($form_state['values']['bundles']) as $option_key) {
+      list($entity_type, $bundle_type) = explode(':', $option_key);
+
+      if (isset($field['bundles'][$entity_type]) && in_array($bundle_type, $field['bundles'][$entity_type])) {
+        // Skip existing instances.
+        continue;
+      }
+
+      // Copy the existing instance.
+      $new_instance = array(
+        'entity_type' => $entity_type,
+        'bundle' => $bundle_type,
+      ) + $instance;
+      field_create_instance($new_instance);
+    }
+  }
+}
+
+/**
  * Form builder for the field clone page.
  *
  * @param $instance
@@ -118,3 +194,22 @@ function field_tools_field_clone_form_submit($form, &$form_state) {
     field_create_instance($new_instance);
   }
 }
+
+/**
+ * Helper to get FormAPI options for entity bundles.
+ *
+ * @return
+ *  An array for FormAPI '#options' properties, with:
+ *    - keys of the form ENTITY:BUNDLE, using machine names.
+ *    - values of the form ENTITY: BUNDLE, using labels.
+ */
+function field_tools_options_entity_bundle() {
+  $options = array();
+  foreach (entity_get_info() as $entity_type => $entity_info) {
+    foreach ($entity_info['bundles'] as $bundle_type => $bundle_info) {
+      $options[$entity_type . ':' . $bundle_type] = $entity_info['label'] . ': ' . $bundle_info['label'];
+    }
+  }
+  return $options;
+}
+
