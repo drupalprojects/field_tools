@@ -94,3 +94,20 @@ function field_tools_menu() {
 
   return $items;
 }
+
+/**
+ * Helper function to determine whether a field can be attached an entity type.
+ *
+ * Certain fields like comment_body are restricted to certain entity types.
+ *
+ * @param string $entity_type
+ *  The entity type to check.
+ * @param array $field_info
+ *  The field info to check.
+ *
+ * @return boolean
+ *  Whether the field can be attached to the entity type.
+ */
+function _field_tools_entity_can_attach_field($entity_type, $field_info) {
+  return !(!empty($field_info['entity_types']) && !in_array($entity_type, $field_info['entity_types']));
+}

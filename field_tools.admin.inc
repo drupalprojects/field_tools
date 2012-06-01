@@ -137,8 +137,10 @@ function field_tools_field_clone_form($form, &$form_state, $instance) {
 
   $options = array();
   foreach (entity_get_info() as $entity_type => $entity_info) {
-    foreach ($entity_info['bundles'] as $bundle_type => $bundle_info) {
-      $options[$entity_type . ':' . $bundle_type] = $entity_info['label'] . ': ' . $bundle_info['label'];
+    if (_field_tools_entity_can_attach_field($entity_type, $field)) {
+      foreach ($entity_info['bundles'] as $bundle_type => $bundle_info) {
+        $options[$entity_type . ':' . $bundle_type] = $entity_info['label'] . ': ' . $bundle_info['label'];
+      }
     }
   }
   //dsm($options);
