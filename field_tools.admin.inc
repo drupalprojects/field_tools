@@ -179,7 +179,7 @@ function field_tools_field_clone_form_submit($form, &$form_state) {
   $field_name = $instance['field_name'];
   $field = field_info_field($field_name);
   //dsm($field);
-  
+
   foreach (array_filter($form_state['values']['bundles']) as $option_key) {
     list($entity_type, $bundle_type) = explode(':', $option_key);
 
@@ -214,4 +214,3 @@ function field_tools_options_entity_bundle() {
   }
   return $options;
 }
-

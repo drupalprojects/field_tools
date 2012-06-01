@@ -29,7 +29,7 @@ function field_tools_help($path, $arg) {
 /**
  * Implements hook_menu().
  */
-function field_tools_menu() { 
+function field_tools_menu() {
   // Create tabs for all possible bundles.
   foreach (entity_get_info() as $entity_type => $entity_info) {
     if ($entity_info['fieldable']) {
@@ -61,7 +61,7 @@ function field_tools_menu() {
           $access += array(
             'access callback' => 'user_access',
             'access arguments' => array('administer site configuration'),
-          );          
+          );
 
           // Menu item for cloning a bundle's fields en masse.
           // In some cases, $path is the same for every bundle, eg nodes, and
@@ -87,7 +87,6 @@ function field_tools_menu() {
             'file' => 'field_tools.admin.inc',
             'weight' => 10,
           ) + $access;
-          
         }
       }
     }
