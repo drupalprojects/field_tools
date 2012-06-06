@@ -69,11 +69,27 @@ function field_tools_menu() {
           $items["$path/fields-clone"] = array(
               'title' => 'Clone fields',
               'page callback' => 'drupal_get_form',
-              'page arguments' => array('field_tools_bundle_fields_clone_form', $entity_type, (int) $bundle_pos),
+              'page arguments' => array('field_tools_bundle_fields_clone_from_form', $entity_type, (int) $bundle_pos),
               'type' => MENU_LOCAL_TASK,
               'file' => 'field_tools.admin.inc',
               'weight' => 10,
             ) + $access;
+          $items["$path/fields-clone/from"] = array(
+            'title' => 'Clone fields from this bundle',
+            'page callback' => 'drupal_get_form',
+            'page arguments' => array('field_tools_bundle_fields_clone_from_form', $entity_type, (int) $bundle_pos),
+            'type' => MENU_DEFAULT_LOCAL_TASK,
+            'file' => 'field_tools.admin.inc',
+            'weight' => 10,
+          ) + $access;
+          $items["$path/fields-clone/to"] = array(
+            'title' => 'Clone fields to this bundle',
+            'page callback' => 'drupal_get_form',
+            'page arguments' => array('field_tools_bundle_fields_clone_to_form', $entity_type, $bundle_arg),
+            'type' => MENU_LOCAL_TASK,
+            'file' => 'field_tools.admin.inc',
+            'weight' => 20,
+          ) + $access;
 
           // Menu item for cloning a single field.
           $items["$path/fields/%field_ui_menu/clone"] = array(
@@ -110,4 +126,21 @@ function field_tools_menu() {
  */
 function _field_tools_entity_can_attach_field($entity_type, $field_info) {
   return !(!empty($field_info['entity_types']) && !in_array($entity_type, $field_info['entity_types']));
+}
+
+/**
+ * Helper function to tell if a field is already attached to a bundle.
+ *
+ * @param string $entity_type
+ *   The entity type to check.
+ * @param string $bundle_type
+ *   The bundle type to check.
+ * @param array $field_info
+ *   The field info array for the field to check.
+ *
+ * @return boolean
+ *   Whether the field is already attached to this bundle.
+ */
+function _field_tools_field_already_attached($entity_type, $bundle_type, $field_info) {
+  return array_key_exists($entity_type, $field_info['bundles']) && in_array($bundle_type, $field_info['bundles'][$entity_type]);
 }
