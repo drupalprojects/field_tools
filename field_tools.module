@@ -8,8 +8,15 @@
  * Implements hook_help().
  */
 function field_tools_help($path, $arg) {
+  // system_modules() form passes us in an array of nothing but empty strings
+  // which we don't want to get tripped up by.
+  $args_filtered = array_filter($arg);
+  if (!$args_filtered) {
+    return;
+  }
+
   // WTF: the $arg array is 12 items long with empty cruft at the end!?!
-  $args_reverse = array_reverse(array_filter($arg));
+  $args_reverse = array_reverse($args_filtered);
 
   // Provide help for any path that ends in 'fields/%/clone'
   $last_three = array_slice(array_filter($arg), -3);
