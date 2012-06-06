@@ -67,13 +67,13 @@ function field_tools_menu() {
           // In some cases, $path is the same for every bundle, eg nodes, and
           // hence doing this here is redundant.
           $items["$path/fields-clone"] = array(
-              'title' => 'Clone fields',
-              'page callback' => 'drupal_get_form',
-              'page arguments' => array('field_tools_bundle_fields_clone_from_form', $entity_type, (int) $bundle_pos),
-              'type' => MENU_LOCAL_TASK,
-              'file' => 'field_tools.admin.inc',
-              'weight' => 10,
-            ) + $access;
+            'title' => 'Clone fields',
+            'page callback' => 'drupal_get_form',
+            'page arguments' => array('field_tools_bundle_fields_clone_from_form', $entity_type, (int) $bundle_pos),
+            'type' => MENU_LOCAL_TASK,
+            'file' => 'field_tools.admin.inc',
+            'weight' => 10,
+          ) + $access;
           $items["$path/fields-clone/from"] = array(
             'title' => 'Clone fields from this bundle',
             'page callback' => 'drupal_get_form',

@@ -346,7 +346,7 @@ function field_tools_bundle_fields_clone_to_form_submit($form, &$form_state) {
  * @param array $instance
  *   The field instance to be added to the bundles.
  * @param array $new_instances
- *   An array describing entity bundles on which to create field instances. 
+ *   An array describing entity bundles on which to create field instances.
  *   Each key is an entity type machine name, each value is an array of bundle
  *   machine names of that entity.
  */
@@ -359,7 +359,7 @@ function _field_tools_add_instance_to_bundles($instance, $new_instances) {
     if (!empty($bundles)) {
       if (!_field_tools_entity_can_attach_field($entity_type, $field_info)) {
         drupal_set_message(t('Field %field_label cannot be attached to entity type %entity_type', array('
-          %field_label' => $instance['label'], 
+          %field_label' => $instance['label'],
           '%entity_type' => $entity_types[$entity_type]['label'],
         )));
         continue;
