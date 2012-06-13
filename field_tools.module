@@ -44,18 +44,22 @@ function field_tools_menu() {
         if (isset($bundle_info['admin'])) {
           // Extract path information from the bundle.
           $path = $bundle_info['admin']['path'];
-          // Different bundles can appear on the same path (e.g. %node_type and
-          // %comment_node_type). To allow field_ui_menu_load() to extract the
-          // actual bundle object from the translated menu router path
-          // arguments, we need to identify the argument position of the bundle
-          // name string ('bundle argument') and pass that position to the menu
-          // loader. The position needs to be casted into a string; otherwise it
-          // would be replaced with the bundle name string.
+
+          // Determine whether this path caters for several bundles (usually all)
+          // of one entity type, or just one.
           if (isset($bundle_info['admin']['bundle argument'])) {
+            // Different bundles can appear on the same path (e.g. %node_type and
+            // %comment_node_type). To allow field_ui_menu_load() to extract the
+            // actual bundle object from the translated menu router path
+            // arguments, we need to identify the argument position of the bundle
+            // name string ('bundle argument') and pass that position to the menu
+            // loader. The position needs to be casted into a string; otherwise it
+            // would be replaced with the bundle name string.
             $bundle_arg = $bundle_info['admin']['bundle argument'];
             $bundle_pos = (string) $bundle_arg;
           }
           else {
+            // Otherwise, this path is for a single bundle. Things are much simpler!
             $bundle_arg = $bundle_name;
             $bundle_pos = '0';
           }
@@ -76,7 +80,7 @@ function field_tools_menu() {
           $items["$path/fields-clone"] = array(
             'title' => 'Clone fields',
             'page callback' => 'drupal_get_form',
-            'page arguments' => array('field_tools_bundle_fields_clone_from_form', $entity_type, (int) $bundle_pos),
+            'page arguments' => array('field_tools_bundle_fields_clone_from_form', $entity_type, $bundle_arg),
             'type' => MENU_LOCAL_TASK,
             'file' => 'field_tools.admin.inc',
             'weight' => 10,
@@ -84,7 +88,7 @@ function field_tools_menu() {
           $items["$path/fields-clone/from"] = array(
             'title' => 'Clone fields from this bundle',
             'page callback' => 'drupal_get_form',
-            'page arguments' => array('field_tools_bundle_fields_clone_from_form', $entity_type, (int) $bundle_pos),
+            'page arguments' => array('field_tools_bundle_fields_clone_from_form', $entity_type, $bundle_arg),
             'type' => MENU_DEFAULT_LOCAL_TASK,
             'file' => 'field_tools.admin.inc',
             'weight' => 10,
