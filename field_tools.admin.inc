@@ -39,6 +39,10 @@ function field_tools_bundle_fields_clone_from_form($form, &$form_state, $entity_
     //'#default_value' => $default_bundles,
     '#description' => t("Select bundles on which to apply the selected fields."),
   );
+  // Disable the checkbox for the current bundle.
+  $form['bundles']["$entity_type:$bundle_name"] = array(
+    '#disabled' => TRUE,
+  );
 
   $form['submit'] = array(
     '#type' => 'submit',
