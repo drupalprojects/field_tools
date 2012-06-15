@@ -18,7 +18,7 @@ function field_tools_help($path, $arg) {
   // WTF: the $arg array is 12 items long with empty cruft at the end!?!
   $args_reverse = array_reverse($args_filtered);
 
-  // Provide help for any path that ends in 'fields/%/clone'
+  // Provide help for any path that ends in 'fields/%/clone'.
   $last_three = array_slice(array_filter($arg), -3);
   // If we get fewer than three items we don't care anyway.
   if (count($last_three) >= 3) {
@@ -27,9 +27,13 @@ function field_tools_help($path, $arg) {
     }
   }
 
-  // Provide help for any path that ends in 'fields-clone'
+  // Provide help for any path that ends in 'fields-clone'.
   if ($args_reverse[0] == 'fields-clone') {
     return t("Apply some or all fields of the current bundle to other bundles by copying the field instances.");
+  }
+  // Provide help any path that ends in 'fields-clone/to'.
+  if (count($args_reverse) > 1 && $args_reverse[1] == 'fields-clone' && $args_reverse[0] == 'to') {
+    return t("Select the fields you want to copy this bundle. You can only select one instance of a particular field.");
   }
 }
 

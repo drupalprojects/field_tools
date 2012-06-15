@@ -222,10 +222,6 @@ function field_tools_bundle_fields_clone_to_form($form, &$form_state, $current_e
   $all_instances = field_info_instances();
 
   $entity_types = entity_get_info();
-  $form['instructions'] = array(
-    '#type' => 'markup',
-    '#markup' => t('Select the fields you want to copy <em>to</em> this bundle. You can only select one instance of a particular field.'),
-  );
   $form['entity_type'] = array(
     '#value' => $current_entity_type,
     '#type'  => 'value',
