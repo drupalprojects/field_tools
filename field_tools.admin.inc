@@ -35,7 +35,7 @@ function field_tools_bundle_fields_clone_from_form($form, &$form_state, $entity_
   $form['bundles'] = array(
     '#title' => t('Bundle(s) to clone onto'),
     '#type' => 'checkboxes',
-    '#options' => field_tools_options_entity_bundle(),
+    '#options' => field_tools_options_entity_bundle($entity_type, $bundle_name),
     //'#default_value' => $default_bundles,
     '#description' => t("Select bundles on which to apply the selected fields."),
   );
@@ -132,14 +132,8 @@ function field_tools_field_clone_form($form, &$form_state, $instance) {
   );
   */
 
-  $options = array();
-  foreach (entity_get_info() as $entity_type => $entity_info) {
-    if (_field_tools_entity_can_attach_field($entity_type, $field)) {
-      foreach ($entity_info['bundles'] as $bundle_type => $bundle_info) {
-        $options[$entity_type . ':' . $bundle_type] = $entity_info['label'] . ': ' . $bundle_info['label'];
-      }
-    }
-  }
+  $options = field_tools_options_entity_bundle($instance['entity_type'], $instance['bundle']);
+
   //dsm($options);
   $default_bundles = array();
   if ($field_exists) {
@@ -191,16 +185,24 @@ function field_tools_field_clone_form_submit($form, &$form_state) {
 /**
  * Helper to get FormAPI options for entity bundles.
  *
+ * @param string $current_entity_type
+ *   The current entity type that these options will be used with.
+ * @param string $current_bundle
+ *   The current bundle name that these options will be used with.
+ *
  * @return
  *  An array for FormAPI '#options' properties, with:
  *    - keys of the form ENTITY:BUNDLE, using machine names.
  *    - values of the form ENTITY: BUNDLE, using labels.
  */
-function field_tools_options_entity_bundle() {
+function field_tools_options_entity_bundle($current_entity_type, $current_bundle) {
   $options = array();
   foreach (entity_get_info() as $entity_type => $entity_info) {
     foreach ($entity_info['bundles'] as $bundle_type => $bundle_info) {
-      $options[$entity_type . ':' . $bundle_type] = $entity_info['label'] . ': ' . $bundle_info['label'];
+      // Don't show the current bundle in the options.
+      if (!($current_entity_type == $entity_type && $bundle_type == $current_bundle)) {
+        $options[$entity_type . ':' . $bundle_type] = $entity_info['label'] . ': ' . $bundle_info['label'];
+      }
     }
   }
   return $options;
@@ -362,8 +364,8 @@ function _field_tools_add_instance_to_bundles($instance, $new_instances) {
     $bundles = array_filter($bundles);
     if (!empty($bundles)) {
       if (!_field_tools_entity_can_attach_field($entity_type, $field_info)) {
-        drupal_set_message(t('Field %field_label cannot be attached to entity type %entity_type', array('
-          %field_label' => $instance['label'],
+        drupal_set_message(t('Field %field_label cannot be attached to entity type %entity_type', array(
+          '%field_label' => $instance['label'],
           '%entity_type' => $entity_types[$entity_type]['label'],
         )));
         continue;
