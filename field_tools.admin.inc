@@ -147,7 +147,7 @@ function field_tools_field_clone_form($form, &$form_state, $instance) {
     '#type' => 'checkboxes',
     '#options' => $options,
     '#default_value' => $default_bundles,
-    '#description' => t("Select bundles on which to apply this vocabulary's term reference field."),
+    '#description' => t("Select bundles on which to apply this field."),
   );
   // Very neat but undocumented trick: see http://drupal.org/node/1349432
   foreach ($default_bundles as $option_key) {
