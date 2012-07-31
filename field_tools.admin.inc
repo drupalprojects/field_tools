@@ -132,7 +132,7 @@ function field_tools_field_clone_form($form, &$form_state, $instance) {
   );
   */
 
-  $options = field_tools_options_entity_bundle($instance['entity_type'], $instance['bundle']);
+  $options = field_tools_options_entity_bundle($instance['entity_type'], $instance['bundle'], FALSE);
 
   //dsm($options);
   $default_bundles = array();
@@ -189,18 +189,20 @@ function field_tools_field_clone_form_submit($form, &$form_state) {
  *   The current entity type that these options will be used with.
  * @param string $current_bundle
  *   The current bundle name that these options will be used with.
+ * @param boolean $filter
+ *  Whether to filter out the current bundle.
  *
  * @return
  *  An array for FormAPI '#options' properties, with:
  *    - keys of the form ENTITY:BUNDLE, using machine names.
  *    - values of the form ENTITY: BUNDLE, using labels.
  */
-function field_tools_options_entity_bundle($current_entity_type, $current_bundle) {
+function field_tools_options_entity_bundle($current_entity_type, $current_bundle, $filter = TRUE) {
   $options = array();
   foreach (entity_get_info() as $entity_type => $entity_info) {
     foreach ($entity_info['bundles'] as $bundle_type => $bundle_info) {
-      // Don't show the current bundle in the options.
-      if (!($current_entity_type == $entity_type && $bundle_type == $current_bundle)) {
+      // Don't show the current bundle in the options, unless not filtering.
+      if (!$filter || !($current_entity_type == $entity_type && $bundle_type == $current_bundle)) {
         $options[$entity_type . ':' . $bundle_type] = $entity_info['label'] . ': ' . $bundle_info['label'];
       }
     }
