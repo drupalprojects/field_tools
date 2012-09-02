@@ -24,12 +24,13 @@ function field_tools_field_overview() {
     // Column: field instances.
     $row[] = field_tools_field_instances_list($field);
 
-    $row[] = theme('item_list', array(
-      'items' => $items_entities,
-    ));
-
     // Column : operations.
-    $row[] = l('delete instances', "admin/reports/fields/field/$field_name/delete");
+    $items_ops = array();
+    $items_ops[] = l('edit instances', "admin/reports/fields/field/$field_name/edit");
+    $items_ops[] = l('delete instances', "admin/reports/fields/field/$field_name/delete");
+    $row[] = theme('item_list', array(
+      'items' => $items_ops,
+    ));
 
     $rows[] = $row;
   }
@@ -49,6 +50,169 @@ function field_tools_field_overview() {
   drupal_add_css(drupal_get_path('module', 'field_tools') . '/field_tools.css');
 
   return $output;
+}
+
+/**
+ * Form to edit all instances of a field.
+ */
+function field_tools_field_edit_form($form, &$form_state, $field) {
+  // Take the first instance in the list as the one to populate the form with.
+  $entity_type = array_shift(array_keys($field['bundles']));
+  $bundle = $field['bundles'][$entity_type][0];
+
+  $form['warning'] = array(
+    '#markup' => t('WARNING: Editing these values will change ALL INSTANCES of this field:')
+      . '<br />'
+      . field_tools_field_instances_list($field),
+  );
+
+  $instance = field_info_instance($entity_type, $field['field_name'], $bundle);
+
+  module_load_include('inc', 'field_ui', 'field_ui.admin');
+
+  // Remainder cribbed from field_ui_field_edit_form().
+  $form['#field'] = $field;
+  $form['#instance'] = $instance;
+
+  if (!empty($field['locked'])) {
+    $form['locked'] = array(
+      '#markup' => t('The field %field is locked and cannot be edited.', array('%field' => $instance['label'])),
+    );
+    return $form;
+  }
+
+  $field_type = field_info_field_types($field['type']);
+  $widget_type = field_info_widget_types($instance['widget']['type']);
+  $bundles = field_info_bundles();
+
+  // Create a form structure for the instance values.
+  $form['instance'] = array(
+    '#tree' => TRUE,
+    '#type' => 'fieldset',
+    '#title' => t('%type settings', array('%type' => $bundles[$entity_type][$bundle]['label'])),
+    '#description' => t('These settings will be applied the ALL INSTANCES OF THE %field field.', array(
+      '%field' => $instance['label'],
+      '%type' => $bundles[$entity_type][$bundle]['label'],
+    )),
+    // Ensure field_ui_field_edit_instance_pre_render() gets called in addition
+    // to, not instead of, the #pre_render function(s) needed by all fieldsets.
+    '#pre_render' => array_merge(array('field_ui_field_edit_instance_pre_render'), element_info_property('fieldset', '#pre_render', array())),
+  );
+
+  // Build the non-configurable instance values.
+  $form['instance']['field_name'] = array(
+    '#type' => 'value',
+    '#value' => $instance['field_name'],
+  );
+  $form['instance']['entity_type'] = array(
+    '#type' => 'value',
+    '#value' => $entity_type,
+  );
+  $form['instance']['bundle'] = array(
+    '#type' => 'value',
+    '#value' => $bundle,
+  );
+  $form['instance']['widget']['weight'] = array(
+    '#type' => 'value',
+    '#value' => !empty($instance['widget']['weight']) ? $instance['widget']['weight'] : 0,
+  );
+
+  // Build the configurable instance values.
+  $form['instance']['label'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Label'),
+    '#default_value' => !empty($instance['label']) ? $instance['label'] : $field['field_name'],
+    '#required' => TRUE,
+    '#weight' => -20,
+  );
+  $form['instance']['required'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Required field'),
+    '#default_value' => !empty($instance['required']),
+    '#weight' => -10,
+  );
+
+  $form['instance']['description'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Help text'),
+    '#default_value' => !empty($instance['description']) ? $instance['description'] : '',
+    '#rows' => 5,
+    '#description' => t('Instructions to present to the user below this field on the editing form.<br />Allowed HTML tags: @tags', array('@tags' => _field_filter_xss_display_allowed_tags())),
+    '#weight' => -5,
+  );
+
+  // Build the widget component of the instance.
+  $form['instance']['widget']['type'] = array(
+    '#type' => 'value',
+    '#value' => $instance['widget']['type'],
+  );
+  $form['instance']['widget']['module'] = array(
+    '#type' => 'value',
+    '#value' => $widget_type['module'],
+  );
+  $form['instance']['widget']['active'] = array(
+    '#type' => 'value',
+    '#value' => !empty($field['instance']['widget']['active']) ? 1 : 0,
+  );
+
+  // Add additional field instance settings from the field module.
+  $additions = module_invoke($field['module'], 'field_instance_settings_form', $field, $instance);
+  if (is_array($additions)) {
+    $form['instance']['settings'] = $additions;
+  }
+
+  // Add additional widget settings from the widget module.
+  $additions = module_invoke($widget_type['module'], 'field_widget_settings_form', $field, $instance);
+  if (is_array($additions)) {
+    $form['instance']['widget']['settings'] = $additions;
+    $form['instance']['widget']['active']['#value'] = 1;
+  }
+
+  // Add handling for default value if not provided by any other module.
+  if (field_behaviors_widget('default value', $instance) == FIELD_BEHAVIOR_DEFAULT && empty($instance['default_value_function'])) {
+    $form['instance']['default_value_widget'] = field_ui_default_value_widget($field, $instance, $form, $form_state);
+    $form['instance']['default_value_widget']['#description'] .= 'THIS IS NOT YET IMPLEMENTED!';
+  }
+
+  // End crib.
+
+  $form['actions'] = array('#type' => 'actions');
+  $form['actions']['submit'] = array('#type' => 'submit', '#value' => t('Save settings'));
+
+  return $form;
+}
+
+// @todo: validation
+
+/**
+ *
+ *
+ * @see field_ui_field_edit_form_submit()
+ */
+function field_tools_field_edit_form_submit($form, &$form_state) {
+  $instance = $form_state['values']['instance'];
+  $field = $form['#field'];
+
+  // Handle the default value.
+  // @TODO!
+
+  foreach ($field['bundles'] as $entity_type => $bundles) {
+    foreach ($bundles as $bundle) {
+      // Fake the entity type and bundle into the instance data to save.
+      $instance['entity_type'] = $entity_type;
+      $instance['bundle'] = $bundle;
+
+      $instance_source = field_read_instance($entity_type, $field['field_name'], $bundle);
+      $instance = array_merge($instance_source, $instance);
+      field_update_instance($instance);
+      drupal_set_message(t('Saved %label instance on entity %entity, bundle %bundle', array(
+        '%label' => $instance['label'],
+        // TODO: labels.
+        '%entity' => $entity_type,
+        '%bundle' => $bundle,
+      )));
+    }
+  }
 }
 
 /**

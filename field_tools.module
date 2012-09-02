@@ -138,6 +138,12 @@ function field_tools_menu() {
     'page arguments' => array(4),
     'file' => 'field_tools.admin.inc',
   ) + $access;
+  $items["admin/reports/fields/field/%field_tools_field_menu/edit"] = array(
+    'title' => 'Edit instance',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('field_tools_field_edit_form', 4),
+    'file' => 'field_tools.admin.inc',
+  ) + $access;
   $items["admin/reports/fields/field/%field_tools_field_menu/delete"] = array(
     'title' => 'Delete instances',
     'page callback' => 'drupal_get_form',
