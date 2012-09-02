@@ -5,6 +5,117 @@
  */
 
 /**
+ * Page callback for the field overview list.
+ */
+function field_tools_field_overview() {
+  $output = '';
+
+  $entity_info = entity_get_info();
+  $field_types = field_info_field_types();
+  $fields = field_info_fields();
+
+  $rows = array();
+  foreach ($fields as $field_name => $field) {
+    $row = array();
+    // Column: field name.
+    $row[] = l($field_name, 'admin/reports/fields/field/' . $field_name);
+    // Column: field type.
+    $row[] = $field_types[$field['type']]['label'];
+    // Column: field instances.
+    $items_entities = array();
+    foreach ($field['bundles'] as $entity_type => $field_bundle_names) {
+      $items_bundles = array();
+      foreach ($field_bundle_names as $bundle) {
+        // @todo: sort these.
+        $admin_path = _field_ui_bundle_admin_path($entity_type, $bundle);
+        $label = $entity_info[$entity_type]['bundles'][$bundle]['label'];
+        $items_bundles[] = $admin_path ? l($label, $admin_path . '/fields/' . $field_name) : $label;
+      }
+
+      $items_entities[] = $entity_info[$entity_type]['label'] . theme('item_list', array(
+        'items' => $items_bundles,
+      ));
+    }
+    $row[] = theme('item_list', array(
+      'items' => $items_entities,
+    ));
+
+    // Column : operations.
+    $row[] = l('delete instances', "admin/reports/fields/field/$field_name/delete");
+
+    $rows[] = $row;
+  }
+
+  $header = array(
+    t('Field name'),
+    t('Type'),
+    t('Instances'),
+    t('Operations'),
+  );
+
+  $output .= theme('table', array(
+    'rows' => $rows,
+    'header' => $header,
+  ));
+
+  return $output;
+}
+
+/**
+ * Form for deleting multiple instances of a field.
+ */
+function field_tools_field_delete_form($form, &$form_state, $field) {
+  drupal_set_title(t('Delete instances from field %fieldname', array(
+    '%fieldname' => $field['field_name'],
+  )), PASS_THROUGH);
+
+  $form['info'] = array(
+    '#markup' => $field['field_name'],
+  );
+
+  $entity_info = entity_get_info();
+
+  $options = array();
+  foreach ($field['bundles'] as $entity_type => $bundles) {
+    foreach ($bundles as $bundle) {
+      $options["$entity_type:$bundle"] = $entity_info[$entity_type]['label'] . ': ' . $entity_info[$entity_type]['bundles'][$bundle]['label'];
+    }
+  }
+
+  $form['instances'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Instances to delete'),
+    '#description' => t("WARNING: deleting an instance will delete ALL THE DATA in that instance."),
+    '#options' => $options,
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Delete field instances'),
+  );
+
+  // @todo: use confirm_form()!
+  return $form;
+}
+
+/**
+ * Submit handler for deleting multiple instances.
+ */
+function field_tools_field_delete_form_submit($form, &$form_state) {
+  $field = $form_state['build_info']['args'][0];
+  foreach (array_filter($form_state['values']['instances']) as $instance_key) {
+    list($entity_type, $bundle_name) = explode(':', $instance_key);
+    $instance = field_info_instance($entity_type, $field['field_name'], $bundle_name);
+    field_delete_instance($instance);
+    drupal_set_message(t('Deleted instance of %fieldname from %entity bundle %bundle', array(
+      '%fieldname' => $field['field_name'],
+      '%entity' => $entity_type,
+      '%bundle' => $bundle_name,
+    )));
+  }
+}
+
+/**
  * Form builder for the cloning multiple fields from a bundle.
  *
  * @param $entity_type
@@ -395,4 +506,30 @@ function _field_tools_add_instance_to_bundles($instance, $new_instances) {
       }
     }
   }
+}
+
+/**
+ * Page callback to list all instances of a field with links to edit them.
+ */
+function field_tools_field_page($field_name) {
+  $field = field_info_field($field_name);
+  if (!$field) {
+    return t('No field found.');
+  }
+  //dsm($field);
+  //dsm(_field_info_collate_fields());
+  $field_instance_list = field_tools_info_instances($field_name);
+  $bundles = field_info_bundles();
+
+  $items = array();
+  foreach ($field_instance_list as $entity_type => $bundle_list) {
+    foreach ($bundle_list as $bundle) {
+      $admin_path = _field_ui_bundle_admin_path($entity_type, $bundle);
+
+      $items[] = l($bundles[$entity_type][$bundle]['label'], $admin_path . '/fields/' . $field_name);
+    }
+  }
+
+
+  return theme('item_list', array('items' => $items));
 }

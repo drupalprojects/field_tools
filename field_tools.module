@@ -123,7 +123,62 @@ function field_tools_menu() {
     }
   }
 
+  // Field tools overview.
+  $items["admin/reports/fields/tools"] = array(
+    'title' => 'Tools',
+    'page callback' => 'field_tools_field_overview',
+    'type' => MENU_LOCAL_TASK,
+    'weight' => -1,
+    'file' => 'field_tools.admin.inc',
+  ) + $access;
+
+  $items["admin/reports/fields/field/%"] = array(
+    'title' => 'Field instances',
+    'page callback' => 'field_tools_field_page',
+    'page arguments' => array(4),
+    'file' => 'field_tools.admin.inc',
+  ) + $access;
+  $items["admin/reports/fields/field/%field_tools_field_menu/delete"] = array(
+    'title' => 'Delete instances',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('field_tools_field_delete_form', 4),
+    'file' => 'field_tools.admin.inc',
+  ) + $access;
+
   return $items;
+}
+
+/**
+ * Menu loader for a field.
+ *
+ * @param $field_name
+ *  The machine name of a field.
+ */
+function field_tools_field_menu_load($field_name) {
+  if ($field = field_info_field($field_name)) {
+    return $field;
+  }
+  return FALSE;
+}
+
+/**
+ * Helper to get a list of all instances of a field.
+ *
+ * @param $field_name
+ *  The name of a field.
+ *
+ *
+ * @return
+ *  An array of entity types and bundles this field has instances on. Keys are
+ *  entity types, values are arrays of bundle names.
+ */
+function field_tools_info_instances($field_name) {
+  $info = _field_info_collate_fields();
+
+  $fid = $info['field_ids'][$field_name];
+  $field_bundles = $info['fields'][$fid]['bundles'];
+
+  return $field_bundles;
 }
 
 /**
