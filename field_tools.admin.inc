@@ -22,20 +22,8 @@ function field_tools_field_overview() {
     // Column: field type.
     $row[] = $field_types[$field['type']]['label'];
     // Column: field instances.
-    $items_entities = array();
-    foreach ($field['bundles'] as $entity_type => $field_bundle_names) {
-      $items_bundles = array();
-      foreach ($field_bundle_names as $bundle) {
-        // @todo: sort these.
-        $admin_path = _field_ui_bundle_admin_path($entity_type, $bundle);
-        $label = $entity_info[$entity_type]['bundles'][$bundle]['label'];
-        $items_bundles[] = $admin_path ? l($label, $admin_path . '/fields/' . $field_name) : $label;
-      }
+    $row[] = field_tools_field_instances_list($field);
 
-      $items_entities[] = $entity_info[$entity_type]['label'] . theme('item_list', array(
-        'items' => $items_bundles,
-      ));
-    }
     $row[] = theme('item_list', array(
       'items' => $items_entities,
     ));
@@ -534,4 +522,36 @@ function field_tools_field_page($field_name) {
 
 
   return theme('item_list', array('items' => $items));
+}
+
+/**
+ * Helper to format a nested list of field instances, grouped by entity type.
+ *
+ * @todo: make this a theme function?
+ *
+ * @param $field
+ *  A field definition array.
+ *
+ * @return
+ *  A nested list of entities and bundles that this field has instances on.
+ */
+function field_tools_field_instances_list($field) {
+  $entity_info = entity_get_info();
+  $items_entities = array();
+  foreach ($field['bundles'] as $entity_type => $field_bundle_names) {
+    $items_bundles = array();
+    foreach ($field_bundle_names as $bundle) {
+      // @todo: sort these.
+      $admin_path = _field_ui_bundle_admin_path($entity_type, $bundle);
+      $label = $entity_info[$entity_type]['bundles'][$bundle]['label'];
+      $items_bundles[] = $admin_path ? l($label, $admin_path . '/fields/' . $field['field_name']) : $label;
+    }
+
+    $items_entities[] = $entity_info[$entity_type]['label'] . theme('item_list', array(
+      'items' => $items_bundles,
+    ));
+  }
+  return theme('item_list', array(
+    'items' => $items_entities,
+  ));
 }
