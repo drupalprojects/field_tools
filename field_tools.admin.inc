@@ -58,6 +58,8 @@ function field_tools_field_overview() {
     'header' => $header,
   ));
 
+  drupal_add_css(drupal_get_path('module', 'field_tools') . '/field_tools.css');
+
   return $output;
 }
 
