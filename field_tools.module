@@ -179,11 +179,15 @@ function field_tools_field_menu_load($field_name) {
  *  entity types, values are arrays of bundle names.
  */
 function field_tools_info_instances($field_name) {
-  $info = _field_info_collate_fields();
-
-  $fid = $info['field_ids'][$field_name];
-  $field_bundles = $info['fields'][$fid]['bundles'];
-
+  $instances = field_info_instances();
+  $field_bundles = array();
+  foreach ($instances as $entity_type => $bundles) {
+    foreach ($bundles as $bundle => $bundle_instances) {
+      if (isset($bundle_instances[$field_name])) {
+        $field_bundles[$entity_type][] = $bundle;
+      }
+    }
+  }
   return $field_bundles;
 }
 

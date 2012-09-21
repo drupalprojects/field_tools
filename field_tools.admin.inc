@@ -671,7 +671,6 @@ function field_tools_field_page($field_name) {
     return t('No field found.');
   }
   //dsm($field);
-  //dsm(_field_info_collate_fields());
   $field_instance_list = field_tools_info_instances($field_name);
   $bundles = field_info_bundles();
 
