@@ -171,7 +171,6 @@ function field_tools_field_edit_form($form, &$form_state, $field) {
   // Add handling for default value if not provided by any other module.
   if (field_behaviors_widget('default value', $instance) == FIELD_BEHAVIOR_DEFAULT && empty($instance['default_value_function'])) {
     $form['instance']['default_value_widget'] = field_ui_default_value_widget($field, $instance, $form, $form_state);
-    $form['instance']['default_value_widget']['#description'] .= 'THIS IS NOT YET IMPLEMENTED!';
   }
 
   // End crib.
@@ -182,7 +181,14 @@ function field_tools_field_edit_form($form, &$form_state, $field) {
   return $form;
 }
 
-// @todo: validation
+/**
+ *
+ *
+ * @see field_ui_field_edit_form_validate()
+ */
+function field_tools_field_edit_form_validate($form, &$form_state) {
+  field_ui_field_edit_form_validate($form, $form_state);
+}
 
 /**
  *
@@ -194,7 +200,16 @@ function field_tools_field_edit_form_submit($form, &$form_state) {
   $field = $form['#field'];
 
   // Handle the default value.
-  // @TODO!
+  if (isset($form['instance']['default_value_widget'])) {
+    $element = $form['instance']['default_value_widget'];
+
+    // Extract field values.
+    $items = array();
+    field_default_extract_form_values(NULL, NULL, $field, $instance, LANGUAGE_NONE, $items, $element, $form_state);
+    field_default_submit(NULL, NULL, $field, $instance, LANGUAGE_NONE, $items, $element, $form_state);
+
+    $instance['default_value'] = $items ? $items : NULL;
+  }
 
   foreach ($field['bundles'] as $entity_type => $bundles) {
     foreach ($bundles as $bundle) {
