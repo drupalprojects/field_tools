@@ -224,3 +224,52 @@ function _field_tools_entity_can_attach_field($entity_type, $field_info) {
 function _field_tools_field_already_attached($entity_type, $bundle_type, $field_info) {
   return array_key_exists($entity_type, $field_info['bundles']) && in_array($bundle_type, $field_info['bundles'][$entity_type]);
 }
+
+/**
+ * Implements hook_form_FORM_ID_alter(): field_ui_field_overview_form
+ *
+ * Add an extra column to Field UI admin forms to show the feature that a field
+ * is exported to, if any.
+ */
+function field_tools_form_field_ui_field_overview_form_alter(&$form, &$form_state, $form_id) {
+  if (module_exists('features')) {
+    // Get the list of fields in features.
+    $components_map = features_get_component_map('field');
+    foreach ($components_map as $component_name => $feature) {
+      list($entity_type, $bundle_name, $field_name) = explode('-', $component_name);
+      // Skip components that are not relevant to this form.
+      if ($form['#entity_type'] != $entity_type || $form['#bundle'] != $bundle_name) {
+        continue;
+      }
+
+      // Add a column for an exported field's feature.
+      $feature_name = $feature[0];
+      $form['fields'][$field_name]['features'] = array(
+        '#markup' => l($feature_name, 'admin/structure/features/' . $feature_name),
+      );
+
+    }
+
+    // Now fill in a blank cell for all other rows.
+    foreach (element_children($form['fields']) as $field_name) {
+      switch ($form['fields'][$field_name]['#row_type']) {
+        case 'field':
+          if (!isset($form['fields'][$field_name]['features'])) {
+            $form['fields'][$field_name]['features'] = array(
+              '#markup' => t('Not exported'),
+            );
+          }
+          break;
+        case 'extra_field':
+          $form['fields'][$field_name]['features'] = array();
+          break;
+        case 'add_new_field':
+          $form['fields'][$field_name]['features'] = array();
+          break;
+      }
+    }
+
+    // Add the header for our column.
+    $form['fields']['#header'][] = t('Feature');
+  }
+}
