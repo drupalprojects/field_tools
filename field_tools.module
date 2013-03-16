@@ -238,7 +238,13 @@ function field_tools_form_field_ui_field_overview_form_alter(&$form, &$form_stat
     foreach ($components_map as $component_name => $feature) {
       list($entity_type, $bundle_name, $field_name) = explode('-', $component_name);
       // Skip components that are not relevant to this form.
-      if ($form['#entity_type'] != $entity_type || $form['#bundle'] != $bundle_name) {
+      if ($form['#entity_type'] != $entity_type) {
+        continue;
+      }
+      if ($form['#bundle'] != $bundle_name) {
+        continue;
+      }
+      if (!isset($form['fields'][$field_name])) {
         continue;
       }
 
