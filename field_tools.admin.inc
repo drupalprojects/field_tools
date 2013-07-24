@@ -480,6 +480,11 @@ function field_tools_field_clone_form_submit($form, &$form_state) {
 function field_tools_options_entity_bundle($current_entity_type, $current_bundle, $filter = TRUE) {
   $options = array();
   foreach (entity_get_info() as $entity_type => $entity_info) {
+    // Skip entities that don't take fields.
+    if (empty($entity_info['fieldable'])) {
+      continue;
+    }
+
     foreach ($entity_info['bundles'] as $bundle_type => $bundle_info) {
       // Don't show the current bundle in the options, unless not filtering.
       if (!$filter || !($current_entity_type == $entity_type && $bundle_type == $current_bundle)) {
