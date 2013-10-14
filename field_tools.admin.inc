@@ -722,8 +722,17 @@ function field_tools_field_instances_list($field) {
   $entity_info = entity_get_info();
   $items_entities = array();
   foreach ($field['bundles'] as $entity_type => $field_bundle_names) {
+    // Fields may exist for entities that no longer do.
+    if (!isset($entity_info[$entity_type])) {
+      continue;
+    }
+
     $items_bundles = array();
     foreach ($field_bundle_names as $bundle) {
+      if (!isset($entity_info[$entity_type]['bundles'][$bundle])) {
+        continue;
+      }
+
       // @todo: sort these.
       $admin_path = _field_ui_bundle_admin_path($entity_type, $bundle);
       $label = $entity_info[$entity_type]['bundles'][$bundle]['label'];
