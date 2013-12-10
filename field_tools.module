@@ -118,6 +118,48 @@ function field_tools_menu() {
             'file' => 'field_tools.admin.inc',
             'weight' => 10,
           ) + $access;
+
+          // Menu items for import and export of fields.
+          $items["$path/tools/export"] = array(
+            'title' => 'Export fields',
+            'page callback' => 'drupal_get_form',
+            'page arguments' => array('field_tools_bundle_export_form', $entity_type, $bundle_arg),
+            'type' => MENU_LOCAL_TASK,
+            'file' => 'field_tools.admin.inc',
+            'weight' => 30,
+          ) + $access;
+
+          $items["$path/tools/import"] = array(
+            'title' => 'Import fields',
+            'page callback' => 'drupal_get_form',
+            'page arguments' => array('field_tools_bundle_import_form', $entity_type, $bundle_arg),
+            'type' => MENU_LOCAL_TASK,
+            'file' => 'field_tools.admin.inc',
+            'weight' => 40,
+          ) + $access;
+
+          // Menu item for exporting a single field.
+          $items["$path/fields/%field_ui_menu/export"] = array(
+            'load arguments' => array($entity_type, $bundle_arg, $bundle_pos, '%map'),
+            'title' => 'Export',
+            'page callback' => 'drupal_get_form',
+            'page arguments' => array('field_tools_field_export_form', $field_position),
+            'type' => MENU_LOCAL_TASK,
+            'file' => 'field_tools.admin.inc',
+            'weight' => 1,
+          ) + $access;
+
+          if (module_exists('field_group')) {
+            $items["$path/groups/%field_group_menu/export"] = array(
+              'load arguments' => array($entity_type, $bundle_arg, $bundle_pos, '%map'),
+              'title' => 'Export',
+              'page callback' => 'drupal_get_form',
+              'page arguments' => array('field_tools_group_export_form', $field_position),
+              'type' => MENU_CALLBACK,
+              'file' => 'field_tools.admin.inc',
+              'weight' => 1,
+            ) + $access;
+          }
         }
       }
     }
@@ -223,4 +265,75 @@ function _field_tools_entity_can_attach_field($entity_type, $field_info) {
  */
 function _field_tools_field_already_attached($entity_type, $bundle_type, $field_info) {
   return array_key_exists($entity_type, $field_info['bundles']) && in_array($bundle_type, $field_info['bundles'][$entity_type]);
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter(): field_ui_field_overview_form
+ */
+function field_tools_form_field_ui_field_overview_form_alter(&$form, $form_state) {
+  // make sure we have an array to add our after_build callback function to
+  if (!isset($form['#after_build']) || !is_array($form['#after_build'])) {
+    $form['#after_build'] = array();
+  }
+  $form['#after_build'][] = 'field_tools_alter_fields_ui_table';
+}
+
+/**
+ * Form after_build callback to add an export link to a fields table.
+ *
+ * Add an extra column to Field UI admin forms to show the feature that a field
+ * is exported to, if any.
+ */
+function field_tools_alter_fields_ui_table($form, $form_state) {
+  $form['fields']['#header'][6]['colspan']++;
+
+  foreach (element_children($form['fields']) as $field_name) {
+    if (!in_array($form['fields'][$field_name]['#row_type'], array('field', 'group'))) {
+      $form['fields'][$field_name]['export']['#markup'] = NULL;
+      continue;
+    }
+
+    $bundle = $form['#bundle'];
+    $entity_type = $form['#entity_type'];
+    $admin_path = _field_ui_bundle_admin_path($entity_type, $bundle);
+
+    switch ($form['fields'][$field_name]['#row_type']) {
+      case 'field':
+        if (!isset($form['fields'][$field_name]['edit']) || (isset($form['fields'][$field_name]['edit']['#value']) && $form['fields'][$field_name]['edit']['#value'] == t('Locked'))) {
+          $form['fields'][$field_name]['export']['#markup'] = NULL;
+          continue;
+        }
+
+        $instance = field_info_instance($entity_type, $field_name, $bundle);
+        $admin_field_path = $admin_path . '/fields/' . $instance['field_name'];
+
+        $form['fields'][$field_name]['export'] = array(
+          '#type' => 'link',
+          '#title' => t('export'),
+          '#href' => $admin_field_path . '/export',
+          '#options' => array(
+            'attributes' => array(
+              'title' => t('Export instance'),
+            )
+          ),
+        );
+        break;
+
+      case 'group':
+        $admin_field_path = $admin_path . '/groups/' . $field_name;
+        $form['fields'][$field_name]['export'] = array(
+          '#type' => 'link',
+          '#title' => t('export'),
+          '#href' => $admin_field_path . '/export/form',
+          '#options' => array(
+            'attributes' => array(
+              'title' => t('Export group'),
+            )
+          ),
+        );
+        break;
+    }
+  }
+
+  return $form;
 }
