@@ -69,7 +69,7 @@ function field_tools_field_edit_form($form, &$form_state, $field) {
 
   $instance = field_info_instance($entity_type, $field['field_name'], $bundle);
 
-  module_load_include('inc', 'field_ui', 'field_ui.admin');
+  form_load_include($form_state, 'inc', 'field_ui', 'field_ui.admin');
 
   // Remainder cribbed from field_ui_field_edit_form().
   $form['#field'] = $field;
@@ -401,7 +401,7 @@ function field_tools_field_clone_form($form, &$form_state, $instance) {
     '#description' => t('At least one term in this vocabulary must be selected when submitting data with this field.'),
   );
 
-  module_load_include('inc', 'field_ui', 'field_ui.admin');
+  form_load_include($form_state, 'inc', 'field_ui', 'field_ui.admin');
   $widget_options = field_ui_widget_type_options($field['type']);
   $form['settings']['widget_type'] = array(
     '#type' => 'select',
