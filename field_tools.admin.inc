@@ -229,6 +229,9 @@ function field_tools_field_edit_form_submit($form, &$form_state) {
       )));
     }
   }
+
+  // Redirect the user to the overview page.
+  $form_state['redirect'] = 'admin/reports/fields/tools';
 }
 
 /**
