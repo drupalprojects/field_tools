@@ -54,6 +54,12 @@ function field_tools_field_overview() {
 
 /**
  * Form to edit all instances of a field.
+ *
+ * @param $field
+ *  A field definition array.
+ *
+ * @see field_tools_field_edit_form_validate()
+ * @see field_tools_field_edit_form_submit()
  */
 function field_tools_field_edit_form($form, &$form_state, $field) {
   // Take the first instance in the list as the one to populate the form with.
@@ -183,8 +189,10 @@ function field_tools_field_edit_form($form, &$form_state, $field) {
 }
 
 /**
+ * Validate handler for the form for all instances of a field.
  *
- *
+ * @see field_tools_field_edit_form()
+ * @see field_tools_field_edit_form_submit()
  * @see field_ui_field_edit_form_validate()
  */
 function field_tools_field_edit_form_validate($form, &$form_state) {
@@ -192,8 +200,10 @@ function field_tools_field_edit_form_validate($form, &$form_state) {
 }
 
 /**
+ * Submit handler for the form for all instances of a field.
  *
- *
+ * @see field_tools_field_edit_form()
+ * @see field_tools_field_edit_form_validate()
  * @see field_ui_field_edit_form_submit()
  */
 function field_tools_field_edit_form_submit($form, &$form_state) {
