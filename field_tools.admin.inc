@@ -57,7 +57,8 @@ function field_tools_field_overview() {
  */
 function field_tools_field_edit_form($form, &$form_state, $field) {
   // Take the first instance in the list as the one to populate the form with.
-  $entity_type = array_shift(array_keys($field['bundles']));
+  $bundles = array_keys($field['bundles']);
+  $entity_type = array_shift($bundles);
   $bundle = $field['bundles'][$entity_type][0];
 
   $form['warning'] = array(
