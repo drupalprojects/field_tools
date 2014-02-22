@@ -280,9 +280,6 @@ function field_tools_form_field_ui_field_overview_form_alter(&$form, $form_state
 
 /**
  * Form after_build callback to add an export link to a fields table.
- *
- * Add an extra column to Field UI admin forms to show the feature that a field
- * is exported to, if any.
  */
 function field_tools_alter_fields_ui_table($form, $form_state) {
   // Figure out the key for the operations column in the table, as other modules
