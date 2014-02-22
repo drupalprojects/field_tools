@@ -285,7 +285,13 @@ function field_tools_form_field_ui_field_overview_form_alter(&$form, $form_state
  * is exported to, if any.
  */
 function field_tools_alter_fields_ui_table($form, $form_state) {
-  $form['fields']['#header'][6]['colspan']++;
+  // Figure out the key for the operations column in the table, as other modules
+  // may be adding more columns too.
+  $header = $form['fields']['#header'];
+  end($header);
+  $key = key($header);
+
+  $form['fields']['#header'][$key]['colspan']++;
 
   foreach (element_children($form['fields']) as $field_name) {
     if (!in_array($form['fields'][$field_name]['#row_type'], array('field', 'group'))) {
