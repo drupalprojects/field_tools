@@ -282,17 +282,28 @@ function field_tools_form_field_ui_field_overview_form_alter(&$form, $form_state
  * Form after_build callback to add an export link to a fields table.
  */
 function field_tools_alter_fields_ui_table($form, $form_state) {
-  // Figure out the key for the operations column in the table, as other modules
-  // may be adding more columns too.
+  // Figure out the key for the operations column in the table header, as other
+  // modules may be adding more columns too.
   $header = $form['fields']['#header'];
-  end($header);
-  $key = key($header);
-
+  foreach ($header as $key => $header_cell) {
+    if (is_array($header_cell) && $header_cell['data'] == t('Operations')) {
+      break;
+    }
+  }
+  // Increate the colspan of the 'operations' column.
   $form['fields']['#header'][$key]['colspan']++;
 
+  // For each field, add an 'export' operation link after the 'delete' link.
   foreach (element_children($form['fields']) as $field_name) {
     if (!in_array($form['fields'][$field_name]['#row_type'], array('field', 'group'))) {
-      $form['fields'][$field_name]['export']['#markup'] = NULL;
+      $export_cell = array(
+        '#markup' => NULL,
+      );
+      $insert_array = array(
+        'export' => $export_cell,
+      );
+      field_tools_array_insert($form['fields'][$field_name], 'delete', $insert_array);
+
       continue;
     }
 
@@ -303,14 +314,21 @@ function field_tools_alter_fields_ui_table($form, $form_state) {
     switch ($form['fields'][$field_name]['#row_type']) {
       case 'field':
         if (!isset($form['fields'][$field_name]['edit']) || (isset($form['fields'][$field_name]['edit']['#value']) && $form['fields'][$field_name]['edit']['#value'] == t('Locked'))) {
-          $form['fields'][$field_name]['export']['#markup'] = NULL;
+          $export_cell = array(
+            '#markup' => NULL,
+          );
+          $insert_array = array(
+            'export' => $export_cell,
+          );
+          field_tools_array_insert($form['fields'][$field_name], 'delete', $insert_array);
+
           continue;
         }
 
         $instance = field_info_instance($entity_type, $field_name, $bundle);
         $admin_field_path = $admin_path . '/fields/' . $instance['field_name'];
 
-        $form['fields'][$field_name]['export'] = array(
+        $export_cell = array(
           '#type' => 'link',
           '#title' => t('export'),
           '#href' => $admin_field_path . '/export',
@@ -320,11 +338,16 @@ function field_tools_alter_fields_ui_table($form, $form_state) {
             )
           ),
         );
+        $insert_array = array(
+          'export' => $export_cell,
+        );
+        field_tools_array_insert($form['fields'][$field_name], 'delete', $insert_array);
+
         break;
 
       case 'group':
         $admin_field_path = $admin_path . '/groups/' . $field_name;
-        $form['fields'][$field_name]['export'] = array(
+        $export_cell = array(
           '#type' => 'link',
           '#title' => t('export'),
           '#href' => $admin_field_path . '/export/form',
@@ -334,9 +357,56 @@ function field_tools_alter_fields_ui_table($form, $form_state) {
             )
           ),
         );
+        $insert_array = array(
+          'export' => $export_cell,
+        );
+        field_tools_array_insert($form['fields'][$field_name], 'delete', $insert_array);
+
         break;
     }
   }
 
   return $form;
+}
+
+
+/**
+ * Inserts values into an array after a given key.
+ *
+ * Values from $insert_array are inserted after (or before) $key in $array. If
+ * $key is not found, $insert_array is appended to $array using array_merge().
+ *
+ * From https://drupal.org/node/66183.
+ *
+ * @param $array
+ *   The array to insert into. Passed by reference and altered in place.
+ * @param $key
+ *   The key of $array to insert after
+ * @param $insert_array
+ *   An array whose values should be inserted.
+ * @param $before
+ *   If TRUE, insert before the given key, rather than after it.
+ *   Defaults to inserting after.
+*/
+function field_tools_array_insert(&$array, $key, $insert_array, $before = FALSE) {
+  $done = FALSE;
+  foreach ($array as $array_key => $array_val) {
+    if (!$before) {
+      $new_array[$array_key] = $array_val;
+    }
+    if ($array_key == $key && !$done) {
+      foreach ($insert_array as $insert_array_key => $insert_array_val) {
+        $new_array[$insert_array_key] = $insert_array_val;
+      }
+      $done = TRUE;
+    }
+    if ($before) {
+      $new_array[$array_key] = $array_val;
+    }
+  }
+  if (!$done) {
+    $new_array = array_merge($array, $insert_array);
+  }
+  // Put the new array in the place of the original.
+  $array = $new_array;
 }
