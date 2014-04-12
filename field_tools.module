@@ -19,12 +19,8 @@ function field_tools_help($path, $arg) {
   $args_reverse = array_reverse($args_filtered);
 
   // Provide help for any path that ends in 'fields/%/clone'.
-  $last_three = array_slice($args_filtered, -3);
-  // If we get fewer than three items we don't care anyway.
-  if (count($last_three) >= 3) {
-    if ($last_three[0] == 'fields' && $last_three[2] == 'clone') {
-      return t('Apply this existing field to the other bundles by copying the current field instance.');
-    }
+  if ($args_reverse[0] == 'clone' && $args_reverse[2] == 'fields') {
+    return t('Apply this existing field to the other bundles by copying the current field instance.');
   }
 
   // Provide help for any path that ends in 'tools'.
