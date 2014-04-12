@@ -571,7 +571,7 @@ function field_tools_bundle_export_form_submit($form, &$form_state) {
 function field_tools_bundle_import_form($form, $form_state, $entity_type, $bundle) {
   $form = array();
   $form['#entity_type'] = $entity_type;
-  $form['#bundle'] = is_object($bundle) ? $bundle->type : $bundle;
+  $form['#bundle'] = field_extract_bundle($entity_type, $bundle);
   $form['code'] = field_tools_textarea(t('Field code'));
   $form['code']['#required'] = TRUE;
   $form['code']['#description'] = t('Paste the code of one or more previously exported fields.');
