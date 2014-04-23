@@ -185,6 +185,14 @@ function field_tools_menu() {
     'file' => 'field_tools.admin.inc',
   ) + $access;
 
+  $items["admin/reports/fields/references"] = array(
+    'title' => 'References',
+    'page callback' => 'field_tools_field_references_overview',
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 5,
+    'file' => 'field_tools.admin.inc',
+  ) + $access;
+
   $items["admin/reports/fields/field/%"] = array(
     'title' => 'Field instances',
     'page callback' => 'field_tools_field_page',

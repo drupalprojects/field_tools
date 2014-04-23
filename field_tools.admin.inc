@@ -53,6 +53,59 @@ function field_tools_field_overview() {
 }
 
 /**
+ * Page callback for the field references overview list.
+ *
+ * @todo Make this all singing and dancing with some sort of visual
+ * representation of the relationships.
+ */
+function field_tools_field_references_overview() {
+  $output = '';
+
+  $entity_info = entity_get_info();
+  $field_types = field_info_field_types();
+  $fields = field_info_fields();
+
+  $rows = array();
+  foreach ($fields as $field_name => $field) {
+    // TODO: also deal with taxonomy term ref, product ref.
+    if (!in_array($field['type'], array('entityreference'))) {
+      continue;
+    }
+
+    $row = array();
+    // Column: field name.
+    $row[] = l($field_name, 'admin/reports/fields/field/' . $field_name);
+    // Column: field type.
+    $row[] = $field_types[$field['type']]['label'];
+    // Column: field instances.
+    $row[] = field_tools_field_instances_list($field);
+    // Column: targets.
+    switch ($field['type']) {
+      case 'entityreference':
+        $target_type = $field['settings']['target_type'];
+    }
+    // TODO: target bundles.
+    $row[] = $entity_info[$target_type]['label'];
+
+    $rows[] = $row;
+  }
+
+  $header = array(
+    t('Field name'),
+    t('Type'),
+    t('Instances'),
+    t('Target'),
+  );
+
+  $output .= theme('table', array(
+    'rows' => $rows,
+    'header' => $header,
+  ));
+
+  return $output;
+}
+
+/**
  * Form to edit all instances of a field.
  *
  * @param $field
