@@ -100,6 +100,12 @@ function field_tools_menu() {
             'file' => 'field_tools.admin.inc',
             'weight' => 10,
           ) + $access;
+          // Tweak comment tools to differentiate them from node tools as they
+          // sit in the same sets of tabs.
+          if ($entity_type == 'comment') {
+            $items["$path/tools"]['title'] = 'Comment tools';
+            $items["$path/tools"]['weight'] = 11;
+          }
           $items["$path/tools/clone-from"] = array(
             'title' => 'Clone fields from this bundle',
             'page callback' => 'drupal_get_form',
