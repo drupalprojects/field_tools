@@ -123,7 +123,7 @@ function field_tools_field_references_graph($graph_engine = NULL) {
   $field_map = field_info_field_map();
   $instances = field_info_instances();
 
-  // All the graph nodes need to exist before we can create links.
+  // Step 1: Create graph nodes for reference fields.
   foreach ($fields as $field_name => $field) {
     $target_type = NULL;
     switch ($field['type']) {
@@ -147,6 +147,28 @@ function field_tools_field_references_graph($graph_engine = NULL) {
       graphapi_set_link_title($graph, $instance_entity_type, $target_type, $field_name);
     }
   }
+
+  // Step 2: Create graph nodes for schema properties that point to other entity tables.
+  // First we need a lookup of all the entity tables.
+  $entity_tables = array();
+  foreach ($entity_info as $entity_type => $entity_type_info) {
+    $entity_tables[$entity_type_info['base table']] = $entity_type;
+  }
+  // Now work through each entity's table schema
+  foreach ($entity_info as $entity_type => $entity_type_info) {
+    $entity_table_schema = drupal_get_schema($entity_type_info['base table']);
+    if (!isset($entity_table_schema['foreign keys'])) {
+      continue;
+    }
+    foreach ($entity_table_schema['foreign keys'] as $relation_name => $relation_info) {
+      if (isset($entity_tables[$relation_info['table']])) {
+        // The relation goes to another entity type's table, so add a link to
+        // our graph.
+        graphapi_set_link_title($graph, $entity_type, $entity_tables[$relation_info['table']], $relation_name);
+      }
+    }
+  }
+
   //dsm($graph);
 
   $config = array(
