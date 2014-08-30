@@ -7,6 +7,8 @@ The module adds the following functionality:
 
 - Field tools overview at admin/reports/fields/tools
   - Mass editing of field instances, from the field tools overview page
+- Graph of relationships between entities at admin/reports/fields/graph
+  (requires GraphAPI).
 - Extra operations on field instances. These are added as extra tabs to all
   entity bundle admin pages:
   - Cloning of field instances from the current bundle to other bundles.

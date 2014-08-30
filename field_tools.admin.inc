@@ -106,6 +106,92 @@ function field_tools_field_references_overview() {
 }
 
 /**
+ * Output a graph of references between entity types.
+ *
+ * Requires GraphAPI module.
+ *
+ * @param $graph_engine
+ *  (optional) The name of a GraphAPI engine to use. Defaults to the first
+ *  engine returned by graphapi_get_engines().
+ */
+function field_tools_field_references_graph($graph_engine = NULL) {
+  $graph = graphapi_new_graph();
+
+  $entity_info = entity_get_info();
+  $field_types = field_info_field_types();
+  $fields = field_info_fields();
+  $field_map = field_info_field_map();
+  $instances = field_info_instances();
+
+  // All the graph nodes need to exist before we can create links.
+  foreach ($fields as $field_name => $field) {
+    $target_type = NULL;
+    switch ($field['type']) {
+      case 'entityreference':
+        $target_type = $field['settings']['target_type'];
+        break;
+      case 'taxonomy_term_reference':
+        $target_type = 'taxonomy_term';
+        break;
+      // TODO: deal with product reference fields.
+    }
+
+    // If no target type was set, then we don't know about this sort of field.
+    if (empty($target_type)) {
+      continue;
+    }
+
+    // First pass: only entity types in graph, no bundles.
+    foreach ($field_map[$field_name]['bundles'] as $instance_entity_type => $instance_bundles) {
+      //dsm("FROM $instance_entity_type TO $target_type");
+      graphapi_set_link_title($graph, $instance_entity_type, $target_type, $field_name);
+    }
+  }
+  //dsm($graph);
+
+  $config = array(
+    'width' => 800,
+    'height' => 400,
+  );
+
+  $graph_api_engines = graphapi_get_engines();
+  if (empty($graph_engine)) {
+    // Take the first engine if none was given in the URL.
+    $graph_api_engine_names = array_keys($graph_api_engines);
+    $graph_engine = array_shift($graph_api_engine_names);
+  }
+
+  $config['engine'] = $graph_engine;
+
+  $build = array();
+
+  $vars = array(
+    'graph' => $graph,
+    'config' => $config,
+  );
+
+  $build['graph'] = array(
+    '#markup' => theme('graphapi_dispatch', $vars)
+  );
+
+  $engine_links_items = array();
+  foreach ($graph_api_engines as $name => $label) {
+    if ($graph_engine == $name) {
+      $label .= ' ' . t("(current)");
+    }
+    $engine_links_items[] = l($label, "admin/reports/fields/graph/$name");
+  }
+
+  $build['engine_links'] = array(
+    '#theme' => 'item_list',
+    '#items' => $engine_links_items,
+    '#title' => t("Select graph rendering engine"),
+  );
+
+  return $build;
+}
+
+/**
  * Form to edit all instances of a field.
  *
  * @param $field
