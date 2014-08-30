@@ -129,9 +129,11 @@ function field_tools_field_references_graph($graph_engine = NULL) {
     switch ($field['type']) {
       case 'entityreference':
         $target_type = $field['settings']['target_type'];
+        $link_color = 'red';
         break;
       case 'taxonomy_term_reference':
         $target_type = 'taxonomy_term';
+        $link_color = 'green';
         break;
       // TODO: deal with product reference fields.
     }
@@ -144,7 +146,12 @@ function field_tools_field_references_graph($graph_engine = NULL) {
     // First pass: only entity types in graph, no bundles.
     foreach ($field_map[$field_name]['bundles'] as $instance_entity_type => $instance_bundles) {
       //dsm("FROM $instance_entity_type TO $target_type");
-      graphapi_set_link_title($graph, $instance_entity_type, $target_type, $field_name);
+      $link_data = array(
+        'title' => $field_name,
+        'type'  => 'field-' . $field['type'],
+        'color' => $link_color,
+      );
+      graphapi_set_link_data($graph, $instance_entity_type, $target_type, $link_data);
     }
   }
 
@@ -164,7 +171,12 @@ function field_tools_field_references_graph($graph_engine = NULL) {
       if (isset($entity_tables[$relation_info['table']])) {
         // The relation goes to another entity type's table, so add a link to
         // our graph.
-        graphapi_set_link_title($graph, $entity_type, $entity_tables[$relation_info['table']], $relation_name);
+        $link_data = array(
+          'title' => $relation_name,
+          'type'  => 'schema',
+          'color' => 'blue',
+        );
+        graphapi_set_link_data($graph, $entity_type, $entity_tables[$relation_info['table']], $link_data);
       }
     }
   }
