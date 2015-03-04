@@ -68,7 +68,7 @@ function field_tools_field_references_overview() {
   $rows = array();
   foreach ($fields as $field_name => $field) {
     // TODO: also deal with taxonomy term ref, product ref.
-    if (!in_array($field['type'], array('entityreference'))) {
+    if (!in_array($field['type'], array('entityreference', 'taxonomy_term_reference'))) {
       continue;
     }
 
@@ -81,12 +81,19 @@ function field_tools_field_references_overview() {
     $row[] = field_tools_field_instances_list($field);
     // Column: target entity type.
     switch ($field['type']) {
+      case 'taxonomy_term_reference':
+        $target_type = 'taxonomy_term';
+        break;
       case 'entityreference':
         $target_type = $field['settings']['target_type'];
     } // switch
     $row[] = $entity_info[$target_type]['label'];
     // Column: target bundles.
     switch ($field['type']) {
+      case 'taxonomy_term_reference':
+        $vocabulary = $field['settings']['allowed_values'][0]['vocabulary'];
+        $row[] = $entity_info['taxonomy_term']['bundles'][$vocabulary]['label'];
+        break;
       case 'entityreference':
         switch ($field['settings']['handler']) {
           case 'base':
