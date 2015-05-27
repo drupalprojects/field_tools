@@ -92,7 +92,8 @@ function field_tools_field_references_overview() {
     switch ($field['type']) {
       case 'taxonomy_term_reference':
         $vocabulary = $field['settings']['allowed_values'][0]['vocabulary'];
-        $row[] = $entity_info['taxonomy_term']['bundles'][$vocabulary]['label'];
+        $row[] = l($entity_info['taxonomy_term']['bundles'][$vocabulary]['label'],
+          _field_ui_bundle_admin_path('taxonomy_term', $vocabulary));
         break;
       case 'entityreference':
         switch ($field['settings']['handler']) {
