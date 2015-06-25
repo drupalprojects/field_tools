@@ -507,6 +507,9 @@ function field_tools_field_delete_form_submit($form, &$form_state) {
       '%bundle' => $bundle_name,
     )));
   }
+
+  // Redirect the user to the overview page.
+  $form_state['redirect'] = 'admin/reports/fields/tools';
 }
 
 /**
