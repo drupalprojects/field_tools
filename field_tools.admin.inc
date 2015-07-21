@@ -538,7 +538,10 @@ function field_tools_bundle_fields_clone_from_form($form, &$form_state, $entity_
 
   $options_fields = array();
   foreach ($field_instances as $field_name => $field) {
-    $options_fields[$field_name] = $field['label'];
+    $options_fields[$field_name] = t("@field-label (machine name: @field-name)", array(
+      '@field-label' => $field['label'],
+      '@field-name' => $field_name,
+    ));
   }
 
   $form['fields'] = array(
