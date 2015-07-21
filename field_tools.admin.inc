@@ -528,6 +528,14 @@ function field_tools_bundle_fields_clone_from_form($form, &$form_state, $entity_
   $field_instances = field_info_instances($entity_type, $bundle_name);
   //dsm($field_instances);
 
+  // Order the instances by weight.
+  uasort($field_instances, function($a, $b) {
+    if ($a['widget']['weight'] == $b['widget']['weight']) {
+        return 0;
+    }
+    return ($a['widget']['weight'] < $b['widget']['weight']) ? -1 : 1;
+  });
+
   $options_fields = array();
   foreach ($field_instances as $field_name => $field) {
     $options_fields[$field_name] = $field['label'];
