@@ -14,6 +14,13 @@ function field_tools_field_overview() {
   $field_types = field_info_field_types();
   $fields = field_info_fields();
 
+  // Sort the fields, defaulting to field name.
+  $query = drupal_get_query_parameters();
+  $sort = isset($query['sort']) ? check_plain($query['sort']) : 'field_name';
+  uasort($fields, function($a, $b) use ($sort) {
+    return strcmp($a[$sort], $b[$sort]);
+  });
+
   $rows = array();
   foreach ($fields as $field_name => $field) {
     $row = array();
@@ -36,8 +43,16 @@ function field_tools_field_overview() {
   }
 
   $header = array(
-    t('Field name'),
-    t('Type'),
+    l(t('Field name'), current_path(), array(
+      'query' => array(
+        'sort' => 'field_name',
+      ),
+    )),
+    l(t('Type'), current_path(), array(
+      'query' => array(
+        'sort' => 'type',
+      ),
+    )),
     t('Instances'),
     t('Operations'),
   );
