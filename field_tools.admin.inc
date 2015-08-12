@@ -558,6 +558,7 @@ function field_tools_bundle_fields_clone_from_form($form, &$form_state, $entity_
       '@field-name' => $field_name,
     ));
   }
+  asort($options_fields);
 
   $form['fields'] = array(
     '#title' => t('Fields to clone'),
