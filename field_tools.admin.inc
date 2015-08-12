@@ -735,6 +735,7 @@ function field_tools_bundle_export_form($form, $form_state, $entity_type, $bundl
   foreach ($instances as $field_name => $field) {
     $options_fields[$field_name] = $field['label'];
   }
+  asort($options_fields);
 
   $form['fields'] = array(
     '#title' => t('Fields to export'),
@@ -749,6 +750,8 @@ function field_tools_bundle_export_form($form, $form_state, $entity_type, $bundl
     foreach ($groups as $group_name => $group) {
       $options_groups[$group_name] = $group->label;
     }
+    asort($options_groups);
+
     $form['groups'] = array(
       '#title' => t('Groups to export'),
       '#type' => 'checkboxes',
