@@ -1257,9 +1257,17 @@ function _field_tools_add_instance_to_bundles($instance, $new_instances) {
         continue;
       }
 
+      // Strip out keys that are specific to the instance being copied.
       $instance = array_diff_key($instance, array_flip(array('id', 'field_id', 'bundle', 'entity_type', 'deleted')));
-      // Only bring back displays that have matching "view mode" in this entity type.
-      $instance['display'] = array_intersect_key($original_display, $entity_types[$entity_type]['view modes']);
+
+      // Only bring back displays that have matching "view mode" in this entity
+      // type.
+      $view_modes = $entity_types[$entity_type]['view modes'];
+      // Add a key for the default display settings, so the array intersection
+      // keeps them, as we always want those.
+      $view_modes['default'] = TRUE;
+
+      $instance['display'] = array_intersect_key($original_display, $view_modes);
       if (empty($instance['display'])) {
         //@todo should there be logic to handle to no matching 'view modes'
       }
