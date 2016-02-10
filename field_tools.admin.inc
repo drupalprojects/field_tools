@@ -17,8 +17,14 @@ function field_tools_field_overview() {
   // Sort the fields, defaulting to field name.
   $query = drupal_get_query_parameters();
   $sort = isset($query['sort']) ? check_plain($query['sort']) : 'field_name';
-  uasort($fields, function($a, $b) use ($sort) {
-    return strcmp($a[$sort], $b[$sort]);
+  uasort($fields, function($a, $b) use ($sort, $field_types) {
+    switch ($sort) {
+      case 'type':
+        // Sort by the field type label.
+        return strcmp($field_types[$a[$sort]]['label'], $field_types[$b[$sort]]['label']);
+      default:
+        return strcmp($a[$sort], $b[$sort]);
+    }
   });
 
   $rows = array();
