@@ -623,7 +623,7 @@ function field_tools_bundle_fields_clone_from_form_submit($form, &$form_state) {
 }
 
 /**
- * Form builder for the field clone page.
+ * Form builder for cloning a single field..
  *
  * @param $instance
  *  A FieldAPI field instance definition array.
