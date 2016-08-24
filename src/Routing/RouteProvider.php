@@ -1,0 +1,65 @@
+<?php
+
+namespace Drupal\field_tools\Routing;
+
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\Routing\DefaultHtmlRouteProvider;
+use Symfony\Component\Routing\Route;
+use Symfony\Component\Routing\RouteCollection;
+
+/**
+ * Provides routes for contact messages and contact forms.
+ */
+class RouteProvider extends DefaultHtmlRouteProvider {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getRoutes(EntityTypeInterface $entity_type) {
+    $route_collection = parent::getRoutes($entity_type);
+
+    return $route_collection;
+    // TODO WHOLE CLASS OBSOLETE!
+    ///////////////////////////////
+
+    $route = (new Route('/foo/bar'))
+      ->addDefaults([
+        '_controller' => 'field_tools_temp_controller',
+        '_title' => 'Clone field',
+      ])
+      ->addRequirements([
+        '_permission' => 'administer contact forms',
+      ]);
+    $route_collection->add('entity.' . $entity_type->id() . '.clone', $route);
+
+
+    /*
+    if ($entity_type->hasLinkTemplate('collection')) {
+      $route = (new Route($entity_type->getLinkTemplate('collection')))
+        ->addDefaults([
+          '_entity_list' => 'contact_message',
+          '_title' => 'Contact messages',
+        ])
+        ->addRequirements([
+          '_permission' => 'administer contact forms',
+        ]);
+      $route_collection->add('entity.' . $entity_type->id() . '.collection', $route);
+    }
+
+    if ($entity_type->hasLinkTemplate('clone-form')) {
+      $route = (new Route($entity_type->getLinkTemplate('clone-form')))
+        ->addDefaults([
+          '_entity_form' => 'contact_form.clone',
+          '_title' => 'Clone form',
+        ])
+        ->addRequirements([
+          '_entity_access' => 'contact_form.clone',
+        ]);
+      $route_collection->add('entity.' . $entity_type->id() . '.clone_form', $route);
+    }
+    */
+
+    return $route_collection;
+  }
+
+}
