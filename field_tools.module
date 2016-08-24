@@ -104,7 +104,7 @@ function field_tools_entity_operation(\Drupal\Core\Entity\EntityInterface $entit
 /**
  * Implements hook_menu().
  */
-function field_tools_menu() {
+function D7field_tools_menu() {
   // Create tabs for all possible bundles.
   foreach (entity_get_info() as $entity_type => $entity_info) {
     if ($entity_info['fieldable']) {
@@ -290,7 +290,7 @@ function field_tools_menu() {
  * @param $field_name
  *  The machine name of a field.
  */
-function field_tools_field_menu_load($field_name) {
+function D7field_tools_field_menu_load($field_name) {
   if ($field = field_info_field($field_name)) {
     return $field;
   }
@@ -308,7 +308,7 @@ function field_tools_field_menu_load($field_name) {
  *  An array of entity types and bundles this field has instances on. Keys are
  *  entity types, values are arrays of bundle names.
  */
-function field_tools_info_instances($field_name) {
+function D7field_tools_info_instances($field_name) {
   $instances = field_info_instances();
   $field_bundles = array();
   foreach ($instances as $entity_type => $bundles) {
@@ -334,7 +334,7 @@ function field_tools_info_instances($field_name) {
  * @return boolean
  *  Whether the field can be attached to the entity type.
  */
-function _field_tools_entity_can_attach_field($entity_type, $field_info) {
+function D7_field_tools_entity_can_attach_field($entity_type, $field_info) {
   return !(!empty($field_info['entity_types']) && !in_array($entity_type, $field_info['entity_types']));
 }
 
@@ -351,14 +351,14 @@ function _field_tools_entity_can_attach_field($entity_type, $field_info) {
  * @return boolean
  *   Whether the field is already attached to this bundle.
  */
-function _field_tools_field_already_attached($entity_type, $bundle_type, $field_info) {
+function D7_field_tools_field_already_attached($entity_type, $bundle_type, $field_info) {
   return array_key_exists($entity_type, $field_info['bundles']) && in_array($bundle_type, $field_info['bundles'][$entity_type]);
 }
 
 /**
  * Implements hook_form_FORM_ID_alter(): field_ui_field_overview_form
  */
-function XXfield_tools_form_field_ui_field_overview_form_alter(&$form, $form_state) {
+function D7field_tools_form_field_ui_field_overview_form_alter(&$form, $form_state) {
   // make sure we have an array to add our after_build callback function to
   if (!isset($form['#after_build']) || !is_array($form['#after_build'])) {
     $form['#after_build'] = array();
@@ -369,7 +369,7 @@ function XXfield_tools_form_field_ui_field_overview_form_alter(&$form, $form_sta
 /**
  * Form after_build callback to add an export link to a fields table.
  */
-function field_tools_alter_fields_ui_table($form, $form_state) {
+function D7field_tools_alter_fields_ui_table($form, $form_state) {
   // Figure out the key for the operations column in the table header, as other
   // modules may be adding more columns too.
   $header = $form['fields']['#header'];
@@ -476,7 +476,7 @@ function field_tools_alter_fields_ui_table($form, $form_state) {
  *   If TRUE, insert before the given key, rather than after it.
  *   Defaults to inserting after.
 */
-function field_tools_array_insert(&$array, $key, $insert_array, $before = FALSE) {
+function D7field_tools_array_insert(&$array, $key, $insert_array, $before = FALSE) {
   $done = FALSE;
   foreach ($array as $array_key => $array_val) {
     if (!$before) {
