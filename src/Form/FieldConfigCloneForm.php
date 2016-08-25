@@ -7,6 +7,7 @@ use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Query\QueryFactory;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\field_tools\FieldCloner;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -38,6 +39,13 @@ class FieldConfigCloneForm extends EntityForm {
   protected $queryFactory;
 
   /**
+   * The field cloner.
+   *
+   * @var \Drupal\field_tools\FieldCloner
+   */
+  protected $fieldCloner;
+
+  /**
    * Creates a Clone instance.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -46,11 +54,14 @@ class FieldConfigCloneForm extends EntityForm {
    *   The entity type bundle info service.
    * @param \Drupal\Core\Entity\Query\QueryFactory $query_factory
    *   The entity query factory.
+   * @param \Drupal\field_tools\FieldCloner $field_cloner
+   *   The field cloner.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, QueryFactory $query_factory) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, QueryFactory $query_factory, FieldCloner $field_cloner) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityTypeBundleInfo = $entity_type_bundle_info;
     $this->queryFactory = $query_factory;
+    $this->fieldCloner = $field_cloner;
   }
 
   /**
@@ -60,7 +71,8 @@ class FieldConfigCloneForm extends EntityForm {
     return new static(
       $container->get('entity_type.manager'),
       $container->get('entity_type.bundle.info'),
-      $container->get('entity.query')
+      $container->get('entity.query'),
+      $container->get('field_tools.field_cloner')
     );
   }
 
@@ -135,12 +147,11 @@ class FieldConfigCloneForm extends EntityForm {
     $destination_bundles = array_filter($form_state->getValue('destination_bundles'));
 
     foreach ($destination_bundles as $destination_bundle) {
-      $new_field_config = $this->entity->createDuplicate();
-      $new_field_config->set('bundle', $destination_bundle);
-      $new_field_config->save();
+      // TODO: $destination_entity_type doesn't do anything yet.
+      $destination_entity_type = NULL;
+      $this->fieldCloner->cloneField($this->entity, $destination_entity_type, $destination_bundle);
     }
 
-    // TODO: add the field to form and display modes.
     // TODO: confirmation message
     // TODO: redirect
   }
