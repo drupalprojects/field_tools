@@ -103,7 +103,7 @@ class FieldConfigCloneForm extends EntityForm {
 
     $form['destination_bundles'] = [
       '#type' => 'checkboxes',
-      '#title' => t("Facet source to clone this facet to"),
+      '#title' => t("Bundle to clone this field to"),
       '#options' => $destination_bundle_options,
     ];
 
