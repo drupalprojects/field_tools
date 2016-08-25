@@ -101,7 +101,7 @@ class FieldConfigCloneForm extends EntityForm {
       ->condition('entity_type', $field_config_target_entity_type_id)
       ->condition('field_name', $field_config->getName())
       ->execute();
-    $other_bundle_fields = $this->entityManager->getStorage('field_config')->loadMultiple($field_ids);
+    $other_bundle_fields = $this->entityTypeManager->getStorage('field_config')->loadMultiple($field_ids);
 
     $other_bundles = [];
     foreach ($other_bundle_fields as $field) {
