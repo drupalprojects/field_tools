@@ -152,7 +152,8 @@ class FieldConfigCloneForm extends EntityForm {
       $this->fieldCloner->cloneField($this->entity, $destination_entity_type, $destination_bundle);
     }
 
-    // TODO: confirmation message
+    drupal_set_message(t("The field has been cloned."));
+
     // TODO: redirect
   }
 
