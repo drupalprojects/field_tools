@@ -78,6 +78,17 @@ class RouteSubscriber extends RouteSubscriberBase {
         dsm($route);
         $collection->add("entity.field_config.{$entity_type_id}_field_tools_clone_form", $route);
 
+        // Route for bulk cloning fields.
+        $route = new Route(
+          "$path/fields/clone",
+          array(
+            '_form' => '\Drupal\field_tools\Form\FieldToolsBulkCloneForm',
+            '_title' => 'Clone fields',
+          ) + $defaults,
+          array('_permission' => 'administer ' . $entity_type_id . ' fields'),
+          $options
+        );
+        $collection->add("field_tools.field_bulk_clone_$entity_type_id", $route);
 
 
 
