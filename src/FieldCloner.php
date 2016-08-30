@@ -67,7 +67,8 @@ class FieldCloner {
 
     // Copy the field's display settings to the destination bundle's displays,
     // where possible.
-    $this->copyViewDisplayComponents($field_config, $destination_entity_type_id, $destination_bundle);
+    $this->copyDisplayComponents('entity_form_display', $field_config, $destination_entity_type_id, $destination_bundle);
+    $this->copyDisplayComponents('entity_view_display', $field_config, $destination_entity_type_id, $destination_bundle);
   }
 
   /**
@@ -80,6 +81,9 @@ class FieldCloner {
    *
    * TODO: generalize this to handle form displays!
    *
+   * @param string $display_type
+   *  The entity type ID of the display entities to copy: one of
+   *  'entity_view_display' or entity_form_display'.
    * @param \Drupal\field\FieldConfigInterface $field_config
    *  The field config entity to clone.
    * @param string $destination_entity_type_id
@@ -88,54 +92,54 @@ class FieldCloner {
    * @param string $destination_bundle
    *  The destination bundle.
    */
-  protected function copyViewDisplayComponents(FieldConfigInterface $field_config, $destination_entity_type_id, $destination_bundle) {
+  protected function copyDisplayComponents($display_type, FieldConfigInterface $field_config, $destination_entity_type_id, $destination_bundle) {
     $field_name = $field_config->getName();
     $field_config_target_entity_type_id = $field_config->getTargetEntityTypeId();
     $field_config_target_bundle = $field_config->getTargetBundle();
 
     // Get the view displays on the source entity bundle.
-    $view_display_ids = $this->queryFactory->get('entity_view_display')
+    $display_ids = $this->queryFactory->get($display_type)
       ->condition('targetEntityType', $field_config_target_entity_type_id)
       ->condition('bundle', $field_config_target_bundle)
       ->execute();
-    $original_field_bundle_view_displays = $this->entityTypeManager->getStorage('entity_view_display')->loadMultiple($view_display_ids);
+    $original_field_bundle_displays = $this->entityTypeManager->getStorage($display_type)->loadMultiple($display_ids);
 
     // Get the views displays on the duplicate's target entity bundle.
-    $view_display_ids = $this->queryFactory->get('entity_view_display')
+    $display_ids = $this->queryFactory->get($display_type)
       ->condition('targetEntityType', $field_config_target_entity_type_id)
       ->condition('bundle', 'article')
       ->execute();
-    $view_displays = $this->entityTypeManager->getStorage('entity_view_display')->loadMultiple($view_display_ids);
+    $displays = $this->entityTypeManager->getStorage($display_type)->loadMultiple($display_ids);
     // Re-key this array by the mode name.
-    $duplicate_field_bundle_view_displays = [];
-    foreach ($view_displays as $view_display) {
-      $duplicate_field_bundle_view_displays[$view_display->getMode()] = $view_display;
+    $duplicate_field_bundle_displays = [];
+    foreach ($displays as $display) {
+      $duplicate_field_bundle_displays[$display->getMode()] = $display;
     }
 
     // Work over the original field's view displays.
-    foreach ($original_field_bundle_view_displays as $view_display) {
+    foreach ($original_field_bundle_displays as $display) {
       // If the destination bundle doesn't have a display of the same name,
       // skip this.
-      if (!isset($duplicate_field_bundle_view_displays[$view_display->getMode()])) {
+      if (!isset($duplicate_field_bundle_displays[$display->getMode()])) {
         continue;
       }
 
-      $destination_view_display = $duplicate_field_bundle_view_displays[$view_display->getMode()];
+      $destination_display = $duplicate_field_bundle_displays[$display->getMode()];
 
       // Get the settings for the field in this display.
-      $field_component = $view_display->getComponent($field_name);
+      $field_component = $display->getComponent($field_name);
 
       // Copy the settings to the duplicate field's view mode with the same
       // name.
       if (is_null($field_component)) {
         // Explicitly hide the field, so it's set in the display.
-        $destination_view_display->removeComponent($field_name);
+        $destination_display->removeComponent($field_name);
       }
       else {
-        $destination_view_display->setComponent($field_name, $field_component);
+        $destination_display->setComponent($field_name, $field_component);
       }
 
-      $destination_view_display->save();
+      $destination_display->save();
     }
   }
 
