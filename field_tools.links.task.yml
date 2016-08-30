@@ -1,0 +1,3 @@
+field_tools.field_bulk_clone:
+  class: \Drupal\Core\Menu\LocalTaskDefault
+  deriver: \Drupal\field_tools\Plugin\Derivative\FieldToolsLocalTask
