@@ -8,23 +8,13 @@
  * Implements hook_help().
  */
 function field_tools_help($route_name, \Drupal\Core\Routing\RouteMatchInterface $route_match) {
-  // TODO: update for 8.x
+  // Clone form.
+  if (substr($route_name, -(strlen('_field_tools_clone_form'))) == '_field_tools_clone_form') {
+    return t('Apply this field to the other bundles by copying the current field. Form and view display options will be copied to displays on the destination bundles where display mode names are the same as those on the source.');
+  }
+
+  // TODO: update what follows for 8.x once the functionality is updated.
   return;
-
-  // system_modules() form passes us in an array of nothing but empty strings
-  // which we don't want to get tripped up by.
-  $args_filtered = array_filter($arg);
-  if (!$args_filtered) {
-    return;
-  }
-
-  // WTF: the $arg array is 12 items long with empty cruft at the end!?!
-  $args_reverse = array_reverse($args_filtered);
-
-  // Provide help for any path that ends in 'fields/%/clone'.
-  if ($args_reverse[0] == 'clone' && $args_reverse[2] == 'fields') {
-    return t('Apply this existing field to the other bundles by copying the current field instance.');
-  }
 
   // Provide help for the bundle tools page.
   // Check the last path item first, so we don't perform all the bundle checking
