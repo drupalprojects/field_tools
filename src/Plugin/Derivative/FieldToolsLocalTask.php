@@ -72,7 +72,7 @@ class FieldToolsLocalTask extends DeriverBase implements ContainerDeriverInterfa
           'route_name' => "field_tools.field_bulk_clone_$entity_type_id",
           'weight' => 4,
           'title' => $this->t('Clone fields'),
-          'base_route' => "entity.$entity_type_id.field_ui_fields",
+          'base_route' => $entity_type->get('field_ui_base_route'),
         );
       }
     }
@@ -82,20 +82,6 @@ class FieldToolsLocalTask extends DeriverBase implements ContainerDeriverInterfa
     }
 
     return $this->derivatives;
-  }
-
-  /**
-   * Alters the base_route definition for field_ui local tasks.
-   *
-   * @param array $local_tasks
-   *   An array of local tasks plugin definitions, keyed by plugin ID.
-   */
-  public function alterLocalTasks(&$local_tasks) {
-    foreach ($this->entityManager->getDefinitions() as $entity_type_id => $entity_type) {
-      if ($route_name = $entity_type->get('field_ui_base_route')) {
-        $local_tasks["field_tools.field_bulk_clone:field_tools_bulk_clone_$entity_type_id"]['base_route'] = $route_name;
-      }
-    }
   }
 
 }
