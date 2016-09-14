@@ -74,12 +74,10 @@ class FieldCloner {
   /**
    * Copy the field's display settings to the destination bundle's displays.
    *
-   * This finds view displays with the same name and copies the original field's
+   * This finds displays with the same name and copies the original field's
    * settings to them. So for example, if the source bundle has a 'teaser' view
    * mode and so does the destination bundle, the settings will be copied from
    * one to the other.
-   *
-   * TODO: generalize this to handle form displays!
    *
    * @param string $display_type
    *  The entity type ID of the display entities to copy: one of
