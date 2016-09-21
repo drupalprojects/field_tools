@@ -8,6 +8,12 @@
  * Implements hook_help().
  */
 function field_tools_help($route_name, \Drupal\Core\Routing\RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help.
+    case 'help.page.field_tools':
+      return t("Field Tools provides additional UI admin tools for working with fields.");
+  }
+
   // Clone form.
   if (substr($route_name, -(strlen('_field_tools_clone_form'))) == '_field_tools_clone_form') {
     return t('Apply this field to the other bundles by copying the current field. Form and view display options will be copied to displays on the destination bundles where display mode names are the same as those on the source.');
