@@ -45,7 +45,6 @@ class FieldCloner {
    * It is assumed that the caller has already checked this is possible!
    *
    * TODO: handle new entity type
-   * TODO: add the field to form and display modes
    *
    * @param \Drupal\field\FieldConfigInterface $field_config
    *  The field config entity to clone.
