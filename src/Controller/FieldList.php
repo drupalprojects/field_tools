@@ -118,7 +118,7 @@ class FieldList implements ContainerInjectionInterface {
       $bundle = $field->getTargetBundle();
 
       $route_parameters = [
-        'field_config' => $field->getName(),
+        'field_config' => $field->id(),
       ];
       if (!empty($bundle_entity_type)) {
         $route_parameters[$bundle_entity_type] = $bundle;
