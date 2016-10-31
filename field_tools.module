@@ -19,6 +19,11 @@ function field_tools_help($route_name, \Drupal\Core\Routing\RouteMatchInterface 
     return t('Apply this field to the other bundles by copying the current field. Form and view display options will be copied to displays on the destination bundles where display mode names are the same as those on the source.');
   }
 
+  // Bulk clone form.
+  if (substr($route_name, 0, strlen('field_tools.field_bulk_clone_')) == 'field_tools.field_bulk_clone_') {
+    return t('Clone fields from this bundle to other bundles. Form and view display options will be copied to displays on the destination bundles where display mode names are the same as those on the source.');
+  }
+
   // TODO: update what follows for 8.x once the functionality is updated.
   return;
 
