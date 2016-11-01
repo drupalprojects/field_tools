@@ -89,7 +89,7 @@ class RouteSubscriber extends RouteSubscriberBase {
         $route = new Route(
           "$path/fields/tools/clone-displays",
           array(
-            '_form' => '\Drupal\field_tools\Form\FieldToolsDisplaysCloneForm',
+            '_form' => '\Drupal\field_tools\Form\EntityDisplayBulkCloneForm',
             '_title' => 'Clone displays',
           ) + $defaults,
           array('_permission' => 'administer ' . $entity_type_id . ' fields'),

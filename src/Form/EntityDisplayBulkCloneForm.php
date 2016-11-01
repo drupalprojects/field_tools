@@ -13,7 +13,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Provides a form to clone displays from an entity bundle.
  */
-class FieldToolsDisplaysCloneForm extends FormBase {
+class EntityDisplayBulkCloneForm extends FormBase {
 
   /**
    * The entity type manager.
