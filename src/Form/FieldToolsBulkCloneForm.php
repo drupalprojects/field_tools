@@ -122,7 +122,7 @@ class FieldToolsBulkCloneForm extends FormBase {
 
     $form['destination_bundles'] = [
       '#type' => 'checkboxes',
-      '#title' => t("Bundle to clone this field to"),
+      '#title' => t("Bundles to clone the fields to"),
       '#options' => $destination_bundle_options,
     ];
 
