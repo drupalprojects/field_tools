@@ -87,8 +87,10 @@ class DisplayCloner {
     $destination_display = $this->entityTypeManager->getStorage($display_entity_type)->load($target_entity_type_id . '.' . $destination_bundle . '.' . $mode_name);
 
     if (empty($destination_display)) {
-      // TODO: create it!
-      throw new \Exception("The destination display doesn't exist yet -- this is not yet supported.");
+      // Create a new display, duplicating the source. We keep the mode the same
+      // but then change the target bundle.
+      $destination_display = $source_entity_display->createCopy($source_entity_display->getMode());
+      $destination_display->setTargetBundle($destination_bundle);
     }
 
     // Get all fields on destination bundle
