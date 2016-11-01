@@ -78,7 +78,7 @@ class RouteSubscriber extends RouteSubscriberBase {
         $route = new Route(
           "$path/fields/tools/clone-fields",
           array(
-            '_form' => '\Drupal\field_tools\Form\FieldToolsBulkCloneForm',
+            '_form' => '\Drupal\field_tools\Form\FieldBulkCloneForm',
             '_title' => 'Clone fields',
           ) + $defaults,
           array('_permission' => 'administer ' . $entity_type_id . ' fields'),

@@ -13,7 +13,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Provides a form to clone multiple fields from an entity bundle.
  */
-class FieldToolsBulkCloneForm extends FormBase {
+class FieldBulkCloneForm extends FormBase {
 
   /**
    * The entity type manager.
