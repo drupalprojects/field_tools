@@ -26,7 +26,7 @@ function field_tools_help($route_name, \Drupal\Core\Routing\RouteMatchInterface 
 
   // Bulk display clone form.
   if (substr($route_name, 0, strlen('field_tools.displays_clone_')) == 'field_tools.displays_clone_') {
-    return t('Clone form and view from this bundle to other bundles.');
+    return t('Clone form and view displays from this bundle to other bundles.');
   }
 
   // TODO: update what follows for 8.x once the functionality is updated.
