@@ -101,7 +101,7 @@ class FieldCloner {
       ->execute();
     $original_field_bundle_displays = $this->entityTypeManager->getStorage($display_type)->loadMultiple($display_ids);
 
-    // Get the views displays on the duplicate's target entity bundle.
+    // Get the views displays on the destination's target entity bundle.
     $display_ids = $this->queryFactory->get($display_type)
       ->condition('targetEntityType', $field_config_target_entity_type_id)
       ->condition('bundle', $destination_bundle)
