@@ -4,6 +4,7 @@ namespace Drupal\field_tools\Form;
 
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
 use Drupal\Core\Entity\Query\QueryFactory;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -30,6 +31,13 @@ class EntityDisplayBulkCloneForm extends FormBase {
   protected $entityTypeBundleInfo;
 
   /**
+   * The entity display repository service.
+   *
+   * @var \Drupal\Core\Entity\EntityDisplayRepositoryInterface
+   */
+  protected $entityDisplayRepository;
+
+  /**
    * The query factory to create entity queries.
    *
    * @var \Drupal\Core\Entity\Query\QueryFactory
@@ -50,14 +58,22 @@ class EntityDisplayBulkCloneForm extends FormBase {
    *   The entity type manager.
    * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
    *   The entity type bundle info service.
+   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entity_display_repository
+   *   The entity display repository service.
    * @param \Drupal\Core\Entity\Query\QueryFactory $query_factory
    *   The entity query factory.
    * @param \Drupal\field_tools\DisplayCloner $display_cloner
    *   The display cloner.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, QueryFactory $query_factory, DisplayCloner $display_cloner) {
+  public function __construct(
+      EntityTypeManagerInterface $entity_type_manager,
+      EntityTypeBundleInfoInterface $entity_type_bundle_info,
+      EntityDisplayRepositoryInterface $entity_display_repository,
+      QueryFactory $query_factory,
+      DisplayCloner $display_cloner) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityTypeBundleInfo = $entity_type_bundle_info;
+    $this->entityDisplayRepository = $entity_display_repository;
     $this->queryFactory = $query_factory;
     $this->displayCloner = $display_cloner;
   }
@@ -69,6 +85,7 @@ class EntityDisplayBulkCloneForm extends FormBase {
     return new static(
       $container->get('entity_type.manager'),
       $container->get('entity_type.bundle.info'),
+      $container->get('entity_display.repository'),
       $container->get('entity.query'),
       $container->get('field_tools.display_cloner')
     );
@@ -144,10 +161,19 @@ class EntityDisplayBulkCloneForm extends FormBase {
       ->execute();
     $form_displays = $this->entityTypeManager->getStorage($type)->loadMultiple($display_ids);
 
+    // Unfortunately, getDisplayModesByEntityType() is protected :(
+    if ($type == 'entity_form_display') {
+      $mode_options = $this->entityDisplayRepository->getFormModeOptions($entity_type_id);
+    }
+    else {
+      $mode_options = $this->entityDisplayRepository->getViewModeOptions($entity_type_id);
+    }
+
     $form_display_options = [];
     foreach ($form_displays as $id => $form_display) {
-      // TODO: WTF, $form_display->label() is NULL?
-      $form_display_options[$id] = $id;
+      // The label() method of displays returns NULL always, so we get the label
+      // from the related mode.
+      $form_display_options[$id] = $mode_options[$form_display->getMode()];
     }
     asort($form_display_options);
 
