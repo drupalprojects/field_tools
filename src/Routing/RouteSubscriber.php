@@ -76,7 +76,7 @@ class RouteSubscriber extends RouteSubscriberBase {
 
         // Route for bulk cloning fields.
         $route = new Route(
-          "$path/fields/clone",
+          "$path/fields/tools/clone-fields",
           array(
             '_form' => '\Drupal\field_tools\Form\FieldToolsBulkCloneForm',
             '_title' => 'Clone fields',
@@ -85,6 +85,18 @@ class RouteSubscriber extends RouteSubscriberBase {
           $options
         );
         $collection->add("field_tools.field_bulk_clone_$entity_type_id", $route);
+
+        // Route for bulk cloning displays.
+        $route = new Route(
+          "$path/fields/tools/clone-displays",
+          array(
+            '_form' => '\Drupal\field_tools\Form\FieldToolsDisplaysCloneForm',
+            '_title' => 'Clone displays',
+          ) + $defaults,
+          array('_permission' => 'administer ' . $entity_type_id . ' fields'),
+          $options
+        );
+        $collection->add("field_tools.displays_clone_$entity_type_id", $route);
       }
     }
   }

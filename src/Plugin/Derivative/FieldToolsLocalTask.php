@@ -65,12 +65,31 @@ class FieldToolsLocalTask extends DeriverBase implements ContainerDeriverInterfa
 
     foreach ($this->entityManager->getDefinitions() as $entity_type_id => $entity_type) {
       if ($entity_type->get('field_ui_base_route')) {
-        // 'Bulk clone' tab.
-        $this->derivatives["field_tools_bulk_clone_$entity_type_id"] = array(
+        // 'Tools' tab.
+        $this->derivatives["field_tools_field_ui_tools_$entity_type_id"] = array(
           'route_name' => "field_tools.field_bulk_clone_$entity_type_id",
           'weight' => 4,
+          'title' => $this->t('Tools'),
+          'base_route' => $entity_type->get('field_ui_base_route'),
+        );
+
+        // Secondary tools tabs.
+        // 'Clone fields' tab.
+        $this->derivatives["field_tools_field_clone_$entity_type_id"] = array(
+          'route_name' => "field_tools.field_bulk_clone_$entity_type_id",
+          'weight' => 0,
           'title' => $this->t('Clone fields'),
           'base_route' => $entity_type->get('field_ui_base_route'),
+          'parent_id' => "field_tools.field_ui_tools:field_tools_field_ui_tools_$entity_type_id",
+        );
+
+        // 'Clone displays' tab.
+        $this->derivatives["field_tools_displays_clone_$entity_type_id"] = array(
+          'route_name' => "field_tools.displays_clone_$entity_type_id",
+          'weight' => 5,
+          'title' => $this->t('Clone displays'),
+          'base_route' => $entity_type->get('field_ui_base_route'),
+          'parent_id' => "field_tools.field_ui_tools:field_tools_field_ui_tools_$entity_type_id",
         );
       }
     }
