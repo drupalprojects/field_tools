@@ -4,7 +4,7 @@ services:
     arguments: ['@entity_type.manager', '@entity.query']
   field_tools.display_cloner:
     class: Drupal\field_tools\DisplayCloner
-    arguments: ['@entity_type.manager', '@entity.query']
+    arguments: ['@entity_type.manager', '@entity.query', '@module_handler']
   field_tools.subscriber:
     class: Drupal\field_tools\Routing\RouteSubscriber
     arguments: ['@entity.manager']

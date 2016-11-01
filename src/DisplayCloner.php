@@ -6,6 +6,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Query\QueryFactory;
 use Drupal\field\FieldConfigInterface;
 use Drupal\Core\Entity\EntityDisplayBase;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 
 /**
@@ -28,16 +29,26 @@ class DisplayCloner {
   protected $queryFactory;
 
   /**
+   * The module handler.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
+   */
+  protected $moduleHandler;
+
+  /**
    * Constructs a new FieldCloner.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    * @param \Drupal\Core\Entity\Query\QueryFactory $entity_query
    *   The entity query service.
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   *   The module handler.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, QueryFactory $entity_query) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, QueryFactory $entity_query, ModuleHandlerInterface $module_handler) {
     $this->entityTypeManager = $entity_type_manager;
     $this->queryFactory = $entity_query;
+    $this->moduleHandler = $module_handler;
   }
 
   /**
@@ -106,9 +117,7 @@ class DisplayCloner {
     }
 
     // Copy field groups.
-    // TODO: inject this service.
-    $moduleHandler = \Drupal::service('module_handler');
-    if ($moduleHandler->moduleExists('field_group')){
+    if ($this->moduleHandler->moduleExists('field_group')){
       $field_group_settings = $source_entity_display->getThirdPartySettings('field_group');
       foreach ($field_group_settings as $group_id => $group_settings) {
         // Remove any fields in groups which do not exist on the destination
