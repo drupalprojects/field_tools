@@ -64,7 +64,6 @@ class RouteSubscriber extends RouteSubscriberBase {
         $route = new Route(
           "$path/fields/{field_config}/clone",
           array(
-            //'_controller' => 'field_tools_temp_controller',
             '_entity_form' => 'field_config.clone',
             '_title' => 'Clone field',
           ) + $defaults,
