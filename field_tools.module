@@ -68,12 +68,6 @@ function field_tools_entity_type_build(array &$entity_types) {
   // form, as then the route can't be dynamic based on the target entity type.
   // Core Field module does this by providing the link template on the fly in
   // FieldConfig::linkTemplates(), but we can't hack into that.
-
-  // Add our route provider.
-  $field_config = $entity_types['field_config'];
-  $providers = $field_config->getRouteProviderClasses();
-  $providers['field_tools'] = Drupal\field_tools\Routing\RouteProvider::class;
-  $field_config->setHandlerClass('route_provider', $providers);
 }
 
 /**
