@@ -12,8 +12,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a form for cloning a field.
- *
- * TODO: allow this to clone to other entity types.
  */
 class FieldConfigCloneForm extends EntityForm {
 
