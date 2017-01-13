@@ -53,8 +53,6 @@ class FieldCloner {
    *  source field, then it is assumed that the field does not exist at all
    *  on the target, that is, there is no field storage already.
    *  @todo remove this assumption
-   *  Note also that display settings are not copied in the case of a foreign
-   *  entity type.
    * @param string $destination_bundle
    *  The destination bundle.
    */
@@ -86,9 +84,6 @@ class FieldCloner {
 
     // Copy the field's display settings to the destination bundle's displays,
     // where possible.
-    if ($destination_entity_type_id != $field_config_target_entity_type_id) {
-      // @todo We don't support copying displays across entity types yet.
-    }
     $this->copyDisplayComponents('entity_form_display', $field_config, $destination_entity_type_id, $destination_bundle);
     $this->copyDisplayComponents('entity_view_display', $field_config, $destination_entity_type_id, $destination_bundle);
   }
@@ -107,8 +102,7 @@ class FieldCloner {
    * @param \Drupal\field\FieldConfigInterface $field_config
    *  The field config entity to clone.
    * @param string $destination_entity_type_id
-   *  The entity type to clone the field to. TODO this parameter does not yet do
-   *  anything!
+   *  The destination entity type.
    * @param string $destination_bundle
    *  The destination bundle.
    */
@@ -126,7 +120,7 @@ class FieldCloner {
 
     // Get the views displays on the destination's target entity bundle.
     $display_ids = $this->queryFactory->get($display_type)
-      ->condition('targetEntityType', $field_config_target_entity_type_id)
+      ->condition('targetEntityType', $destination_entity_type_id)
       ->condition('bundle', $destination_bundle)
       ->execute();
     $displays = $this->entityTypeManager->getStorage($display_type)->loadMultiple($display_ids);
