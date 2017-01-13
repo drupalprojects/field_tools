@@ -167,13 +167,13 @@ class FieldCloner {
       // Copy field groups.
       if ($this->moduleHandler->moduleExists('field_group')){
         $source_display_field_group_settings = $display->getThirdPartySettings('field_group');
+        $destination_display_field_group_settings = $destination_display->getThirdPartySettings('field_group');
 
         // Attempt to find the field in one of the groups.
         foreach ($source_display_field_group_settings as $group_id => $group_settings) {
           if (in_array($field_name, $group_settings['children'])) {
             // Insert the field into the field group of the same name on the
             // destination, creating the field group if necessary.
-            $destination_display_field_group_settings = $destination_display->getThirdPartySettings('field_group');
 
             // Clone the field group if it's not there already.
             if (!isset($destination_display_field_group_settings[$group_id])) {
@@ -187,7 +187,7 @@ class FieldCloner {
             // Splice the new field into the destination field group, attempting
             // to use the same position.
             $position = array_search($field_name, $group_settings['children']);
-            array_splice($destination_display_field_group_settings[$group_id]['children'], 0, $position, [$field_name]);
+            array_splice($destination_display_field_group_settings[$group_id]['children'], $position, 0, [$field_name]);
 
             // Update the field group settings on the destination display.
             $destination_display->setThirdPartySetting('field_group', $group_id, $destination_display_field_group_settings[$group_id]);
