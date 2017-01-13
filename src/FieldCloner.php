@@ -44,28 +44,51 @@ class FieldCloner {
    *
    * It is assumed that the caller has already checked this is possible!
    *
-   * TODO: handle new entity type
+   * TODO: complete handling of new entity type
    *
    * @param \Drupal\field\FieldConfigInterface $field_config
    *  The field config entity to clone.
    * @param string $destination_entity_type_id
-   *  The entity type to clone the field to. TODO this parameter does not yet do
-   *  anything!
+   *  The entity type to clone the field to. If this is different from the
+   *  source field, then it is assumed that the field does not exist at all
+   *  on the target, that is, there is no field storage already.
+   *  @todo remove this assumption
+   *  Note also that display settings are not copied in the case of a foreign
+   *  entity type.
    * @param string $destination_bundle
    *  The destination bundle.
    */
   public function cloneField(FieldConfigInterface $field_config, $destination_entity_type_id, $destination_bundle) {
-    // Create and save the duplicate field.
-    $new_field_config = $field_config->createDuplicate();
-    $new_field_config->set('bundle', $destination_bundle);
-    $new_field_config->save();
-
     // Get the entity type and bundle of the original field.
     $field_config_target_entity_type_id = $field_config->getTargetEntityTypeId();
     $field_config_target_bundle = $field_config->getTargetBundle();
 
+    // If the destination entity type is different from the source field, also
+    // clone the field storage.
+    // @todo We're assuming here that the storage doesn't exist already. If it
+    // does, then there are problems, as the storage could be of a different
+    // field type and thus not compatible with the given field!
+    if ($destination_entity_type_id != $field_config_target_entity_type_id) {
+      $source_field_storage_config = $field_config->getFieldStorageDefinition();
+
+      $new_field_storage_config = $source_field_storage_config->createDuplicate();
+      $new_field_storage_config->set('entity_type', $destination_entity_type_id);
+      $new_field_storage_config->save();
+    }
+
+    // Create and save the duplicate field.
+    $new_field_config = $field_config->createDuplicate();
+    if ($destination_entity_type_id != $field_config_target_entity_type_id) {
+      $new_field_config->set('entity_type', $destination_entity_type_id);
+    }
+    $new_field_config->set('bundle', $destination_bundle);
+    $new_field_config->save();
+
     // Copy the field's display settings to the destination bundle's displays,
     // where possible.
+    if ($destination_entity_type_id != $field_config_target_entity_type_id) {
+      // @todo We don't support copying displays across entity types yet.
+    }
     $this->copyDisplayComponents('entity_form_display', $field_config, $destination_entity_type_id, $destination_bundle);
     $this->copyDisplayComponents('entity_view_display', $field_config, $destination_entity_type_id, $destination_bundle);
   }
