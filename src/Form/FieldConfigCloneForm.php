@@ -89,36 +89,53 @@ class FieldConfigCloneForm extends EntityForm {
       '%field' => $field_config->getLabel(),
     ]);
 
-    $current_entity_type_bundles = $this->entityTypeBundleInfo->getBundleInfo($field_config->getTargetEntityTypeId());
+    $entity_types = $this->entityTypeManager->getDefinitions();
+    $bundles = $this->entityTypeBundleInfo->getAllBundleInfo();
 
-    $destination_bundle_options = [];
-    foreach ($current_entity_type_bundles as $bundle_id => $bundle_info) {
-      if ($bundle_id == $field_config_target_bundle) {
+    $destination_options = [];
+    foreach ($entity_types as $entity_type_id => $entity_type) {
+      // Only consider fieldable entity types.
+      // As we're working with fields in the UI, only consider entity types that
+      // have a field UI.
+      if (!$entity_type->get('field_ui_base_route')) {
         continue;
       }
 
-      $destination_bundle_options[$bundle_id] = $bundle_info['label'];
-    }
-    natcasesort($destination_bundle_options);
+      // @todo If the field is already on any bundles of a different entity type
+      // then it already has a field storage there, and we probably (?) should
+      // not be cloning this one!
 
-    $form['destination_bundles'] = [
+      $entity_type_label = $entity_type->getLabel();
+
+      foreach ($bundles[$entity_type_id] as $bundle_id => $bundle_info) {
+        // Skip the entity type and bundle whose UI we're currently in.
+        if ($entity_type_id == $field_config_target_entity_type_id && $bundle_id == $field_config_target_bundle) {
+          continue;
+        }
+
+        $destination_options["$entity_type_id::$bundle_id"] = $entity_type_label . ' - ' . $bundle_info['label'];
+      }
+    }
+    natcasesort($destination_options);
+
+    $form['destinations'] = [
       '#type' => 'checkboxes',
-      '#title' => t("Bundle to clone this field to"),
-      '#options' => $destination_bundle_options,
+      '#title' => t("Bundles to clone this field to"),
+      '#options' => $destination_options,
     ];
 
     // Get all the fields with the same name on the same entity type, to mark
     // their checkboxes as disabled.
     $field_ids = $this->queryFactory->get('field_config')
-      ->condition('entity_type', $field_config_target_entity_type_id)
       ->condition('field_name', $field_config->getName())
       ->execute();
     $other_bundle_fields = $this->entityTypeManager->getStorage('field_config')->loadMultiple($field_ids);
 
     $other_bundles = [];
     foreach ($other_bundle_fields as $field) {
-      $form['destination_bundles'][$field->getTargetBundle()]['#disabled'] = TRUE;
-      $form['destination_bundles'][$field->getTargetBundle()]['#description'] = t("The field is already on this bundle.");
+      $form_option_key = $field->getTargetEntityTypeId() . '::' . $field->getTargetBundle();
+      $form['destinations'][$form_option_key]['#disabled'] = TRUE;
+      $form['destinations'][$form_option_key]['#description'] = t("The field is already on this bundle.");
     }
 
     return $form;
@@ -144,11 +161,10 @@ class FieldConfigCloneForm extends EntityForm {
    *   A reference to a keyed array containing the current state of the form.
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $destination_bundles = array_filter($form_state->getValue('destination_bundles'));
+    $destinations = array_filter($form_state->getValue('destinations'));
 
-    foreach ($destination_bundles as $destination_bundle) {
-      // TODO: $destination_entity_type doesn't do anything yet.
-      $destination_entity_type = NULL;
+    foreach ($destinations as $destination) {
+      list ($destination_entity_type, $destination_bundle) = explode('::', $destination);
       $this->fieldCloner->cloneField($this->entity, $destination_entity_type, $destination_bundle);
     }
 
