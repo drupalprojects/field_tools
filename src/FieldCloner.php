@@ -4,6 +4,7 @@ namespace Drupal\field_tools;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Query\QueryFactory;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\field\FieldConfigInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 
@@ -27,16 +28,26 @@ class FieldCloner {
   protected $queryFactory;
 
   /**
+   * The module handler.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
+   */
+  protected $moduleHandler;
+
+  /**
    * Constructs a new FieldCloner.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    * @param \Drupal\Core\Entity\Query\QueryFactory $entity_query
    *   The entity query service.
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   *   The module handler.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, QueryFactory $entity_query) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, QueryFactory $entity_query, ModuleHandlerInterface $module_handler) {
     $this->entityTypeManager = $entity_type_manager;
     $this->queryFactory = $entity_query;
+    $this->moduleHandler = $module_handler;
   }
 
   /**
@@ -151,6 +162,41 @@ class FieldCloner {
       }
       else {
         $destination_display->setComponent($field_name, $field_component);
+      }
+
+      // Copy field groups.
+      if ($this->moduleHandler->moduleExists('field_group')){
+        $source_display_field_group_settings = $display->getThirdPartySettings('field_group');
+
+        // Attempt to find the field in one of the groups.
+        foreach ($source_display_field_group_settings as $group_id => $group_settings) {
+          if (in_array($field_name, $group_settings['children'])) {
+            // Insert the field into the field group of the same name on the
+            // destination, creating the field group if necessary.
+            $destination_display_field_group_settings = $destination_display->getThirdPartySettings('field_group');
+
+            // Clone the field group if it's not there already.
+            if (!isset($destination_display_field_group_settings[$group_id])) {
+              $field_group_copy = $group_settings;
+              // Remove the children so the group starts off empty.
+              $field_group_copy['children'] = [];
+
+              $destination_display_field_group_settings[$group_id] = $field_group_copy;
+            }
+
+            // Splice the new field into the destination field group, attempting
+            // to use the same position.
+            $position = array_search($field_name, $group_settings['children']);
+            array_splice($destination_display_field_group_settings[$group_id]['children'], 0, $position, [$field_name]);
+
+            // Update the field group settings on the destination display.
+            $destination_display->setThirdPartySetting('field_group', $group_id, $destination_display_field_group_settings[$group_id]);
+
+            // The field can be in only one group, so we're done: stop looking
+            // at groups.
+            break;
+          }
+        }
       }
 
       $destination_display->save();
