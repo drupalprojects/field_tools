@@ -107,23 +107,10 @@ class FieldBulkCloneForm extends FormBase {
       '#description' => t("Select fields to clone onto one or more bundles."),
     );
 
-    // TODO: currently only support cloning to the current entity type.
-    $current_entity_type_bundles = $this->entityTypeBundleInfo->getBundleInfo($entity_type_id);
-
-    $destination_bundle_options = [];
-    foreach ($current_entity_type_bundles as $bundle_id => $bundle_info) {
-      if ($bundle_id == $bundle) {
-        continue;
-      }
-
-      $destination_bundle_options[$bundle_id] = $bundle_info['label'];
-    }
-    natcasesort($destination_bundle_options);
-
-    $form['destination_bundles'] = [
+    $form['destinations'] = [
       '#type' => 'checkboxes',
       '#title' => t("Bundles to clone the fields to"),
-      '#options' => $destination_bundle_options,
+      '#options' => $this->getDestinationOptions($entity_type_id, $bundle),
     ];
 
     $form['submit'] = array(
@@ -135,6 +122,50 @@ class FieldBulkCloneForm extends FormBase {
   }
 
   /**
+   * Gets the options for the destination entity types and bundles.
+   *
+   * @param $current_entity_type_id
+   *  The entity type ID that the form is on.
+   * @param $current_bundle
+   *  The bundle ID that the form is on. This bundle is omitted from the list.
+   *
+   * @return
+   *  An array of Form API options.
+   */
+  protected function getDestinationOptions($current_entity_type_id, $current_bundle) {
+    $entity_types = $this->entityTypeManager->getDefinitions();
+    $bundles = $this->entityTypeBundleInfo->getAllBundleInfo();
+
+    $destination_options = [];
+    foreach ($entity_types as $entity_type_id => $entity_type) {
+      // Only consider fieldable entity types.
+      // As we're working with fields in the UI, only consider entity types that
+      // have a field UI.
+      if (!$entity_type->get('field_ui_base_route')) {
+        continue;
+      }
+
+      // @todo If the field is already on any bundles of a different entity type
+      // then it already has a field storage there, and we probably (?) should
+      // not be cloning this one!
+
+      $entity_type_label = $entity_type->getLabel();
+
+      foreach ($bundles[$entity_type_id] as $bundle_id => $bundle_info) {
+        // Skip the entity type and bundle whose UI we're currently in.
+        if ($entity_type_id == $current_entity_type_id && $bundle_id == $current_bundle) {
+          continue;
+        }
+
+        $destination_options["$entity_type_id::$bundle_id"] = $entity_type_label . ' - ' . $bundle_info['label'];
+      }
+    }
+    natcasesort($destination_options);
+
+    return $destination_options;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
@@ -143,31 +174,34 @@ class FieldBulkCloneForm extends FormBase {
     $build_info = $form_state->getBuildInfo();
     list($entity_type_id, $bundle) = $build_info['args'];
 
-    $destination_bundles = array_filter($form_state->getValue('destination_bundles'));
+    $destinations = array_filter($form_state->getValue('destinations'));
     $fields_to_clone = array_filter($form_state->getValue('fields'));
 
-    foreach ($fields_to_clone as $field_id) {
-      foreach ($destination_bundles as $destination_bundle) {
+    foreach ($destinations as $destination) {
+      list ($destination_entity_type, $destination_bundle) = explode('::', $destination);
+
+      foreach ($fields_to_clone as $field_id) {
         $field_config = $this->entityTypeManager->getStorage('field_config')->load($field_id);
 
-        // Check the field is not already on the bundle.
+        // Check the field is not already on the destination bundle.
         $field_ids = $this->queryFactory->get('field_config')
-          ->condition('entity_type', $entity_type_id)
+          ->condition('entity_type', $destination_entity_type)
           ->condition('bundle', $destination_bundle)
           ->condition('field_name', $field_config->getName())
           ->execute();
 
         if ($field_ids) {
-          drupal_set_message(t("Field @name is already on bundle @bundle, skipping.", [
+          drupal_set_message(t("Field @name is already on @entity_type @bundle, skipping.", [
             '@name' => $field_config->getName(),
-            // TODO: use label!
+            // TODO: use labels!
+            '@entity_type' => $destination_entity_type,
             '@bundle' => $destination_bundle,
           ]));
 
           continue;
         }
 
-        $this->fieldCloner->cloneField($field_config, $entity_type_id, $destination_bundle);
+        $this->fieldCloner->cloneField($field_config, $destination_entity_type, $destination_bundle);
       }
     }
 
