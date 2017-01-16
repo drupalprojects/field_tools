@@ -5,6 +5,7 @@ namespace Drupal\field_tools;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Query\QueryFactory;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Field\FieldException;
 use Drupal\field\FieldConfigInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 
@@ -55,8 +56,6 @@ class FieldCloner {
    *
    * It is assumed that the caller has already checked this is possible!
    *
-   * TODO: complete handling of new entity type
-   *
    * @param \Drupal\field\FieldConfigInterface $field_config
    *  The field config entity to clone.
    * @param string $destination_entity_type_id
@@ -66,6 +65,10 @@ class FieldCloner {
    *  @todo remove this assumption
    * @param string $destination_bundle
    *  The destination bundle.
+   *
+   * @throws \Drupal\Core\Field\FieldException
+   *  Throws an exception if there is already a field storage with the same name
+   *  on the target entity type, whose type does not match the given field.
    */
   public function cloneField(FieldConfigInterface $field_config, $destination_entity_type_id, $destination_bundle) {
     // Get the entity type and bundle of the original field.
@@ -74,15 +77,30 @@ class FieldCloner {
 
     // If the destination entity type is different from the source field, also
     // clone the field storage.
-    // @todo We're assuming here that the storage doesn't exist already. If it
-    // does, then there are problems, as the storage could be of a different
-    // field type and thus not compatible with the given field!
     if ($destination_entity_type_id != $field_config_target_entity_type_id) {
-      $source_field_storage_config = $field_config->getFieldStorageDefinition();
+      // Check there isn't already a field storage on the target entity type.
+      $field_storage_config_ids = $this->queryFactory->get('field_storage_config')
+        ->condition('entity_type', $destination_entity_type_id)
+        ->condition('field_name', $field_config->getName())
+        ->execute();
+      if (empty($field_storage_config_ids)) {
+        // Create a new field storage, copying the one from the source field.
+        $source_field_storage_config = $field_config->getFieldStorageDefinition();
 
-      $new_field_storage_config = $source_field_storage_config->createDuplicate();
-      $new_field_storage_config->set('entity_type', $destination_entity_type_id);
-      $new_field_storage_config->save();
+        $new_field_storage_config = $source_field_storage_config->createDuplicate();
+        $new_field_storage_config->set('entity_type', $destination_entity_type_id);
+        $new_field_storage_config->save();
+      }
+      else {
+        // Load the existing field storage, and check its type.
+        $existing_field_storage_config = $this->entityTypeManager->getStorage('field_storage_config')->load(reset($field_storage_config_ids));
+
+        if ($existing_field_storage_config->getType() != $field_config->getType()) {
+          throw new FieldException(t("A field with a different type already exists on destination entity type @entity-type.", [
+            '@entity-type' => $destination_entity_type_id,
+          ]));
+        }
+      }
     }
 
     // Create and save the duplicate field.
