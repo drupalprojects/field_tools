@@ -132,8 +132,26 @@ class FieldConfigCloneForm extends EntityForm {
     $other_bundles = [];
     foreach ($other_bundle_fields as $field) {
       $form_option_key = $field->getTargetEntityTypeId() . '::' . $field->getTargetBundle();
-      $form['destinations'][$form_option_key]['#disabled'] = TRUE;
-      $form['destinations'][$form_option_key]['#description'] = t("The field is already on this bundle.");
+
+      if ($field->getType() == $field_config->getType()) {
+        // The other field's type is the same as the current field, so just
+        // mark this bundle as unavailable because it already has the field.
+        $form['destinations'][$form_option_key]['#disabled'] = TRUE;
+        $form['destinations'][$form_option_key]['#description'] = t("The field is already on this bundle.");
+      }
+      else {
+        // The other field is of a different type from the current field. This
+        // bundle is not a valid destination, and furthermore, ALL bundles on
+        // this entity type are invalid, because of the underlying field storage
+        // which will have a different type.
+        // $field->getTargetEntityTypeId()
+        $other_entity_type_bundles = $this->entityTypeBundleInfo->getBundleInfo($field->getTargetEntityTypeId());
+        foreach (array_keys($other_entity_type_bundles) as $other_bundle_name) {
+          $form_option_key = $field->getTargetEntityTypeId() . '::' . $other_bundle_name;
+          $form['destinations'][$form_option_key]['#disabled'] = TRUE;
+          $form['destinations'][$form_option_key]['#description'] = t("A field of a different type is already on this entity type.");
+        }
+      }
     }
 
     return $form;
