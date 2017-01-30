@@ -3,14 +3,20 @@
 namespace Drupal\field_tools\Controller;
 
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a field list admin page.
+ *
+ * TODO: convert this to a list builder!
  */
 class FieldList implements ContainerInjectionInterface {
+
+  use StringTranslationTrait;
 
   /**
    * Creates an FieldList object.
@@ -58,8 +64,7 @@ class FieldList implements ContainerInjectionInterface {
         \Drupal::l(t('Type'), $this->getSortQueryURL('type')),
         \Drupal::l(t('Entity type'), $this->getSortQueryURL('entity_type')),
         t('Instances'),
-        // TODO.
-        // t('Operations'),
+        t('Operations'),
       ],
     ];
 
@@ -136,7 +141,30 @@ class FieldList implements ContainerInjectionInterface {
       '#items' => $items,
     ];
 
+    $row['operations']['data'] = $this->buildOperations($field_storage_config);
+
     return $row;
+  }
+
+  // TODO: remove when this changes to extend EntityListBuilder.
+  public function buildOperations(EntityInterface $entity) {
+    $build = array(
+      '#type' => 'operations',
+      '#links' => $this->getOperations($entity),
+    );
+
+    return $build;
+  }
+
+  // TODO: add inherit doc when this changes to extend EntityListBuilder.
+  public function getOperations(EntityInterface $entity) {
+    $operations = [];
+    $operations['delete'] = array(
+      'title' => $this->t('Delete'),
+      'weight' => 10,
+      'url' => $entity->urlInfo('delete-form'),
+    );
+    return $operations;
   }
 
   /**
