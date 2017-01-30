@@ -5,9 +5,3 @@ field_tools.reports.list:
     _title: Field List
   requirements:
     _permission: 'administer site configuration'
-
-# TODO: get this added in a cleaner way, with an extra route provider?
-entity.field_storage_config.delete_form:
-  path: '/admin/reports/fields/tools/{field_storage_config}/delete'
-  defaults:
-    _entity_form: field_storage_config.delete
