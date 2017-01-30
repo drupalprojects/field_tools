@@ -11,6 +11,14 @@ use Drupal\Core\Form\FormStateInterface;
  */
 class FieldStorageConfigDeleteForm extends EntityDeleteForm {
 
-  // TODO: add extra warnings about how this will delete MULTIPLE FIELDS!
+  /**
+   * {@inheritdoc}
+   */
+  public function getDescription() {
+    return $this->t("This action cannot be undone. ALL the '@field-name' fields on the '@entity-type' entity type will be deleted!", [
+      '@field-name' => $this->entity->getName(),
+      '@entity-type' => $this->entity->getTargetEntityTypeId(),
+    ]);
+  }
 
 }
