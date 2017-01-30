@@ -72,6 +72,10 @@ function field_tools_entity_type_build(array &$entity_types) {
   // form, as then the route can't be dynamic based on the target entity type.
   // Core Field module does this by providing the link template on the fly in
   // FieldConfig::linkTemplates(), but we can't hack into that.
+
+  // Add a delete form and link to field storage config.
+  $entity_types['field_storage_config']->setFormClass('delete', 'Drupal\field_tools\Form\FieldStorageConfigDeleteForm');
+  $entity_types['field_storage_config']->setLinkTemplate('delete-form', '/admin/reports/fields/tools/{field_storage_config}/delete');
 }
 
 /**
