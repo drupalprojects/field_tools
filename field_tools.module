@@ -85,7 +85,7 @@ function field_tools_entity_operation(\Drupal\Core\Entity\EntityInterface $entit
     // Because we're not going via entity URIs but direct to the route, we
     // don't get the handling from FieldConfig::urlRouteParameters(), so
     // need to do it ourselves.
-    $entity_type = \Drupal::entityManager()->getDefinition($target_entity_type_id);
+    $entity_type = \Drupal::entityTypeManager()->getDefinition($target_entity_type_id);
     $bundle_parameter_key = $entity_type->getBundleEntityType() ?: 'bundle';
     $parameters[$bundle_parameter_key] = $entity->getTargetBundle();
 

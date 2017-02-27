@@ -5,6 +5,7 @@ namespace Drupal\field_tools\Controller;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Link;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -60,9 +61,9 @@ class FieldList implements ContainerInjectionInterface {
     $build['table'] = [
       '#type' => 'table',
       '#header' => [
-        \Drupal::l(t('Field name'), $this->getSortQueryURL('field_name')),
-        \Drupal::l(t('Type'), $this->getSortQueryURL('type')),
-        \Drupal::l(t('Entity type'), $this->getSortQueryURL('entity_type')),
+        Link::fromTextAndUrl(t('Field name'), $this->getSortQueryURL('field_name')),
+        Link::fromTextAndUrl(t('Type'), $this->getSortQueryURL('type')),
+        Link::fromTextAndUrl(t('Entity type'), $this->getSortQueryURL('entity_type')),
         t('Instances'),
         t('Operations'),
       ],
@@ -129,9 +130,9 @@ class FieldList implements ContainerInjectionInterface {
         $route_parameters[$bundle_entity_type] = $bundle;
       }
 
-      $url = \Drupal\Core\Url::fromRoute($route_name, $route_parameters);
+      $url = Url::fromRoute($route_name, $route_parameters);
 
-      $items[$bundle] = \Drupal::l($bundle, $url);
+      $items[$bundle] = Link::fromTextAndUrl($bundle, $url)->toString();
     }
 
     natcasesort($items);
@@ -162,7 +163,7 @@ class FieldList implements ContainerInjectionInterface {
     $operations['delete'] = array(
       'title' => $this->t('Delete'),
       'weight' => 10,
-      'url' => $entity->urlInfo('delete-form'),
+      'url' => $entity->toUrl('delete-form'),
     );
     return $operations;
   }

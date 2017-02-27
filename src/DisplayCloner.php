@@ -4,10 +4,8 @@ namespace Drupal\field_tools;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Query\QueryFactory;
-use Drupal\field\FieldConfigInterface;
 use Drupal\Core\Entity\EntityDisplayBase;
 use Drupal\Core\Extension\ModuleHandlerInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 
 /**
  * Contains methods for cloning displays.

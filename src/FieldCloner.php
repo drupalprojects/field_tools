@@ -7,7 +7,6 @@ use Drupal\Core\Entity\Query\QueryFactory;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Field\FieldException;
 use Drupal\field\FieldConfigInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 
 /**
  * Contains methods for cloning fields.
@@ -73,7 +72,6 @@ class FieldCloner {
   public function cloneField(FieldConfigInterface $field_config, $destination_entity_type_id, $destination_bundle) {
     // Get the entity type and bundle of the original field.
     $field_config_target_entity_type_id = $field_config->getTargetEntityTypeId();
-    $field_config_target_bundle = $field_config->getTargetBundle();
 
     // If the destination entity type is different from the source field, also
     // clone the field storage.
