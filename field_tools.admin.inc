@@ -1,7 +1,8 @@
 <?php
 /**
  * @file
- * Contains admin callbacks for the Field tools module.
+ * NOTICE: THIS FILE IS OBSOLETE. IT IS BEING KEPT UNTIL ALL FUNCTIONALITY IS
+ * PORTED TO DRUPAL 8.
  */
 
 /**
