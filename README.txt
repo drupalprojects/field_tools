@@ -14,5 +14,4 @@ The module adds the following functionality:
   entity bundle admin pages:
   - Cloning of field instances from the current bundle to other bundles.
   - Cloning of field instances to the current bundle from other bundles.
-  - Import and export of fields.
   - Renaming of fields (WARNING: doesn't handle field data!).
