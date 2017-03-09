@@ -17,9 +17,7 @@ function field_tools_help($route_name, \Drupal\Core\Routing\RouteMatchInterface 
   // Clone form.
   if (substr($route_name, -(strlen('_field_tools_clone_form'))) == '_field_tools_clone_form') {
     return t('Apply this field to the other bundles by copying the current field.') . ' ' .
-    t('Form and view display options will be copied to displays on the destination bundles where display mode names are the same as those on the source.')
-    . '<br>' .
-    t("Warning: do not clone a field to a different entity type if any bundles of that type already have this field. Cloning across entity types is experimental!");
+    t('Form and view display options will be copied to displays on the destination bundles where display mode names are the same as those on the source.');
 
   }
 
