@@ -53,15 +53,19 @@ class FieldCloner {
   /**
    * Clone a field to a new entity type and bundle.
    *
-   * It is assumed that the caller has already checked this is possible!
+   * It is assumed that the caller has already checked that no field of this
+   * name exists on the destination bundle.
+   * TODO: check for this and throw an exception.
    *
    * @param \Drupal\field\FieldConfigInterface $field_config
    *  The field config entity to clone.
    * @param string $destination_entity_type_id
    *  The entity type to clone the field to. If this is different from the
-   *  source field, then it is assumed that the field does not exist at all
-   *  on the target, that is, there is no field storage already.
-   *  @todo remove this assumption
+   *  source field, then one of the following will happen:
+   *    - a) a new field storage is created
+   *    - b) an existing field storage is used, if its type matches the source
+   *      field.
+   *    - c) an exception is thrown if the existing type does not match.
    * @param string $destination_bundle
    *  The destination bundle.
    *
