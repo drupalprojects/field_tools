@@ -15,6 +15,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class FieldBulkCloneForm extends FormBase {
 
+  use BundleDestinationOptionsTrait;
+
   /**
    * The entity type manager.
    *
@@ -110,8 +112,12 @@ class FieldBulkCloneForm extends FormBase {
     $form['destinations'] = [
       '#type' => 'checkboxes',
       '#title' => t("Bundles to clone the fields to"),
-      '#options' => $this->getDestinationOptions($entity_type_id, $bundle),
+      '#options' => $this->getDestinationOptions($this->entityTypeManager, $this->entityTypeBundleInfo),
     ];
+
+    // Mark the current bundle as disabled.
+    $form['destinations']["$entity_type_id::$bundle"]['#disabled'] = TRUE;
+    $form['destinations']["$entity_type_id::$bundle"]['#description'] = t("This is the current bundle.");
 
     $form['submit'] = array(
       '#type' => 'submit',
@@ -119,50 +125,6 @@ class FieldBulkCloneForm extends FormBase {
     );
 
     return $form;
-  }
-
-  /**
-   * Gets the options for the destination entity types and bundles.
-   *
-   * @param $current_entity_type_id
-   *  The entity type ID that the form is on.
-   * @param $current_bundle
-   *  The bundle ID that the form is on. This bundle is omitted from the list.
-   *
-   * @return
-   *  An array of Form API options.
-   */
-  protected function getDestinationOptions($current_entity_type_id, $current_bundle) {
-    $entity_types = $this->entityTypeManager->getDefinitions();
-    $bundles = $this->entityTypeBundleInfo->getAllBundleInfo();
-
-    $destination_options = [];
-    foreach ($entity_types as $entity_type_id => $entity_type) {
-      // Only consider fieldable entity types.
-      // As we're working with fields in the UI, only consider entity types that
-      // have a field UI.
-      if (!$entity_type->get('field_ui_base_route')) {
-        continue;
-      }
-
-      // @todo If the field is already on any bundles of a different entity type
-      // then it already has a field storage there, and we probably (?) should
-      // not be cloning this one!
-
-      $entity_type_label = $entity_type->getLabel();
-
-      foreach ($bundles[$entity_type_id] as $bundle_id => $bundle_info) {
-        // Skip the entity type and bundle whose UI we're currently in.
-        if ($entity_type_id == $current_entity_type_id && $bundle_id == $current_bundle) {
-          continue;
-        }
-
-        $destination_options["$entity_type_id::$bundle_id"] = $entity_type_label . ' - ' . $bundle_info['label'];
-      }
-    }
-    natcasesort($destination_options);
-
-    return $destination_options;
   }
 
   /**

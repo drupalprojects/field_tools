@@ -15,6 +15,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class FieldConfigCloneForm extends EntityForm {
 
+  use BundleDestinationOptionsTrait;
+
   /**
    * The entity type manager.
    *
@@ -87,39 +89,10 @@ class FieldConfigCloneForm extends EntityForm {
       '%field' => $field_config->getLabel(),
     ]);
 
-    $entity_types = $this->entityTypeManager->getDefinitions();
-    $bundles = $this->entityTypeBundleInfo->getAllBundleInfo();
-
-    $destination_options = [];
-    foreach ($entity_types as $entity_type_id => $entity_type) {
-      // Only consider fieldable entity types.
-      // As we're working with fields in the UI, only consider entity types that
-      // have a field UI.
-      if (!$entity_type->get('field_ui_base_route')) {
-        continue;
-      }
-
-      // @todo If the field is already on any bundles of a different entity type
-      // then it already has a field storage there, and we probably (?) should
-      // not be cloning this one!
-
-      $entity_type_label = $entity_type->getLabel();
-
-      foreach ($bundles[$entity_type_id] as $bundle_id => $bundle_info) {
-        // Skip the entity type and bundle whose UI we're currently in.
-        if ($entity_type_id == $field_config_target_entity_type_id && $bundle_id == $field_config_target_bundle) {
-          continue;
-        }
-
-        $destination_options["$entity_type_id::$bundle_id"] = $entity_type_label . ' - ' . $bundle_info['label'];
-      }
-    }
-    natcasesort($destination_options);
-
     $form['destinations'] = [
       '#type' => 'checkboxes',
       '#title' => t("Bundles to clone this field to"),
-      '#options' => $destination_options,
+      '#options' => $this->getDestinationOptions($this->entityTypeManager, $this->entityTypeBundleInfo),
     ];
 
     // Get all the fields with the same name on the same entity type, to mark
@@ -133,7 +106,12 @@ class FieldConfigCloneForm extends EntityForm {
     foreach ($other_bundle_fields as $field) {
       $form_option_key = $field->getTargetEntityTypeId() . '::' . $field->getTargetBundle();
 
-      if ($field->getType() == $field_config->getType()) {
+      if ($form_option_key == "$field_config_target_entity_type_id::$field_config_target_bundle") {
+        // Mark the current bundle as disabled.
+        $form['destinations'][$form_option_key]['#disabled'] = TRUE;
+        $form['destinations'][$form_option_key]['#description'] = t("This is the current bundle.");
+      }
+      elseif ($field->getType() == $field_config->getType()) {
         // The other field's type is the same as the current field, so just
         // mark this bundle as unavailable because it already has the field.
         $form['destinations'][$form_option_key]['#disabled'] = TRUE;
