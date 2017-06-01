@@ -44,7 +44,7 @@ function field_tools_help($path, $arg) {
 
   // Provide help any path that ends in 'tools/clone-to'.
   if (count($args_reverse) > 1 && $args_reverse[1] == 'tools' && $args_reverse[0] == 'clone-to') {
-    return t("Select the fields you want to copy this bundle. You can only select one instance of a particular field.");
+    return t("Select the fields you want to copy to this bundle. You can only select one instance of a particular field.");
   }
 }
 
@@ -249,7 +249,6 @@ function field_tools_field_menu_load($field_name) {
  *
  * @param $field_name
  *  The name of a field.
- *
  *
  * @return
  *  An array of entity types and bundles this field has instances on. Keys are
