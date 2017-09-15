@@ -96,6 +96,19 @@ class RouteSubscriber extends RouteSubscriberBase {
           $options
         );
         $collection->add("field_tools.displays_clone_$entity_type_id", $route);
+
+        // Route for bulk copying field display settings.
+        $route = new Route(
+          "$path/fields/tools/copy-display-settings",
+          array(
+            '_form' => '\Drupal\field_tools\Form\EntityDisplaySettingsBulkCopyForm',
+            '_title' => 'Copy display settings',
+          ) + $defaults,
+          array('_permission' => 'administer ' . $entity_type_id . ' fields'),
+          $options
+        );
+        $collection->add("field_tools.displays_settings_copy_$entity_type_id", $route);
+
       }
     }
   }
