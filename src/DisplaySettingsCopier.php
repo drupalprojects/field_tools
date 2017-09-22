@@ -56,7 +56,7 @@ class DisplaySettingsCopier {
    * @param FieldDefinitionInterface $field_definition
    *  The field definition.
    * @param EntityDisplayBase $source_entity_display
-   *  The source display. Only form supported for now.
+   *  The source display, view or form.
    * @param $destination_bundle
    *  The destination bundle.
    */
@@ -65,8 +65,11 @@ class DisplaySettingsCopier {
 
     $component = $source_entity_display->getComponent($field_name);
 
+    // The entity type ID of the displays being copied to and from.
+    $display_entity_type_id = $source_entity_display->getEntityTypeId();
+
     // Load the corresponding display on the destination bundle.
-    $destination_display = $this->entityTypeManager->getStorage('entity_form_display')->load($field_definition->getTargetEntityTypeId() . '.' . $destination_bundle . '.' . $source_entity_display->getMode());
+    $destination_display = $this->entityTypeManager->getStorage($display_entity_type_id)->load($field_definition->getTargetEntityTypeId() . '.' . $destination_bundle . '.' . $source_entity_display->getMode());
 
     if (!empty($destination_display)) {
       if (is_null($component)) {

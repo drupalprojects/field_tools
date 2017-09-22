@@ -140,13 +140,6 @@ class EntityDisplaySettingsBulkCopyForm extends FormBase {
       '#description' => t("Select the display to copy settings from and to"),
       '#required' => TRUE,
       '#options' => $this->getDisplayOptions('entity_form_display', $entity_type_id, $bundle),
-      /*
-      // Only do form displays for now, no time to do both.
-      [
-        'Form displays' => $this->getDisplayOptions('entity_form_display', $entity_type_id, $bundle),
-        'View displays' => $this->getDisplayOptions('entity_view_display', $entity_type_id, $bundle),
-      ],
-      */
       // Workaround for core bug: https://www.drupal.org/node/2906113
       '#empty_value' => '',
     );
@@ -189,7 +182,8 @@ class EntityDisplaySettingsBulkCopyForm extends FormBase {
     $values = $form_state->getValues();
 
     $source_fields = array_filter($values['source_fields']);
-    $source_display = $this->entityTypeManager->getStorage('entity_form_display')->load($values['source_display']);
+    list($source_display_type, $source_display_id) = explode(':', $values['source_display']);
+    $source_display = $this->entityTypeManager->getStorage($source_display_type)->load($source_display_id);
     $destination_bundles = array_filter($values['destination_bundles']);
 
     $bundle_fields = $this->entityFieldManager->getFieldDefinitions($entity_type_id, $bundle);
@@ -219,29 +213,39 @@ class EntityDisplaySettingsBulkCopyForm extends FormBase {
    *  An array of form options.
    */
   protected function getDisplayOptions($type, $entity_type_id, $bundle) {
-    $display_ids = $this->queryFactory->get($type)
-      ->condition('targetEntityType', $entity_type_id)
-      ->condition('bundle', $bundle)
-      ->execute();
-    $form_displays = $this->entityTypeManager->getStorage($type)->loadMultiple($display_ids);
+    $display_options = [];
 
-    // Unfortunately, getDisplayModesByEntityType() is protected :(
-    if ($type == 'entity_form_display') {
-      $mode_options = $this->entityDisplayRepository->getFormModeOptions($entity_type_id);
-    }
-    else {
-      $mode_options = $this->entityDisplayRepository->getViewModeOptions($entity_type_id);
+    $types = [
+      'entity_form_display' => 'Form',
+      'entity_view_display' => 'View',
+    ];
+
+    foreach ($types as $type => $label) {
+      $display_ids = $this->queryFactory->get($type)
+        ->condition('targetEntityType', $entity_type_id)
+        ->condition('bundle', $bundle)
+        ->execute();
+      $displays = $this->entityTypeManager->getStorage($type)->loadMultiple($display_ids);
+
+      // Unfortunately, getDisplayModesByEntityType() is protected :(
+      if ($type == 'entity_form_display') {
+        $mode_options = $this->entityDisplayRepository->getFormModeOptions($entity_type_id);
+      }
+      else {
+        $mode_options = $this->entityDisplayRepository->getViewModeOptions($entity_type_id);
+      }
+
+      foreach ($displays as $id => $display) {
+        // The label() method of displays returns NULL always, so we get the label
+        // from the related mode.
+        $display_options[$type . ':' . $id] = $label . ': ' . $mode_options[$display->getMode()];
+      }
+
+      // Sort within each type.
+      asort($display_options);
     }
 
-    $form_display_options = [];
-    foreach ($form_displays as $id => $form_display) {
-      // The label() method of displays returns NULL always, so we get the label
-      // from the related mode.
-      $form_display_options[$id] = $mode_options[$form_display->getMode()];
-    }
-    asort($form_display_options);
-
-    return $form_display_options;
+    return $display_options;
   }
 
 }
