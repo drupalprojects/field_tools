@@ -28,7 +28,7 @@ function field_tools_help($route_name, \Drupal\Core\Routing\RouteMatchInterface 
 
   // Bulk display clone form.
   if (substr($route_name, 0, strlen('field_tools.displays_clone_')) == 'field_tools.displays_clone_') {
-    return t('Clone form and view displays from this bundle to other bundles.');
+    return t('Clone form and view displays from this bundle to other bundles. Field settings on the target are overwritten, except for fields only on the target, which are ignored.');
   }
 
   // Bulk field settings copy form.
