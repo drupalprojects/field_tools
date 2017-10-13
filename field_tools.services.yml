@@ -4,7 +4,7 @@ services:
     arguments: ['@entity_type.manager', '@entity.query', '@module_handler']
   field_tools.display_cloner:
     class: Drupal\field_tools\DisplayCloner
-    arguments: ['@entity_type.manager', '@entity.query', '@module_handler']
+    arguments: ['@entity_type.manager', '@entity_field.manager', '@entity.query', '@module_handler']
   field_tools.display_settings_copier:
     class: Drupal\field_tools\DisplaySettingsCopier
     arguments: ['@entity_type.manager', '@entity.query', '@module_handler']

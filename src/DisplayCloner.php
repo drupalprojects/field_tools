@@ -5,6 +5,7 @@ namespace Drupal\field_tools;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Query\QueryFactory;
 use Drupal\Core\Entity\EntityDisplayBase;
+use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 
 /**
@@ -18,6 +19,13 @@ class DisplayCloner {
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
+
+  /**
+   * The entity field manager service.
+   *
+   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
+   */
+  protected $entityFieldManager;
 
   /**
    * The entity query service.
@@ -38,13 +46,21 @@ class DisplayCloner {
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
+   *   The entity field manager service.
    * @param \Drupal\Core\Entity\Query\QueryFactory $entity_query
    *   The entity query service.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, QueryFactory $entity_query, ModuleHandlerInterface $module_handler) {
+  public function __construct(
+    EntityTypeManagerInterface $entity_type_manager,
+    EntityFieldManagerInterface $entity_field_manager,
+    QueryFactory $entity_query,
+    ModuleHandlerInterface $module_handler
+  ) {
     $this->entityTypeManager = $entity_type_manager;
+    $this->entityFieldManager = $entity_field_manager;
     $this->queryFactory = $entity_query;
     $this->moduleHandler = $module_handler;
   }
@@ -91,17 +107,10 @@ class DisplayCloner {
       $destination_display->setTargetBundle($destination_bundle);
     }
 
-    // Get all fields on destination bundle
-    $field_ids = $this->queryFactory->get('field_config')
-      ->condition('entity_type', $target_entity_type_id)
-      ->condition('bundle', $destination_bundle)
-      ->execute();
-    $destination_bundle_fields = $this->entityTypeManager->getStorage('field_config')->loadMultiple($field_ids);
-    //dsm($destination_bundle_fields);
-    $destination_bundle_field_names = [];
-    foreach ($destination_bundle_fields as $field) {
-      $destination_bundle_field_names[$field->getName()] = $field->id();
-    }
+    // Get all fields on destination bundle.
+    $destination_bundle_fields = array_filter($this->entityFieldManager->getFieldDefinitions($target_entity_type_id, $destination_bundle), function ($field_definition) {
+      return !$field_definition->isComputed();
+    });
 
     // Get the display components from the source display, and copy them to the
     // destination.
@@ -109,7 +118,7 @@ class DisplayCloner {
     $components = $source_entity_display->getComponents();
     foreach ($components as $field_name => $source_display_field_component) {
       // Skip fields that do not exist on the destination bundle.
-      if (!isset($destination_bundle_field_names[$field_name])) {
+      if (!isset($destination_bundle_fields[$field_name])) {
         continue;
       }
 
